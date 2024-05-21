@@ -2,9 +2,10 @@ CREATE SCHEMA IF NOT EXISTS venel;
 
 create table if not exists venel.bridgeInstances
 (
-    id  bigint auto_increment
+    id           bigint auto_increment
         primary key,
-    url varchar(512) not null,
+    url          varchar(512)         not null,
+    useAllowlist tinyint(1) default 1 not null,
     constraint bridgeInstances_pk_2
         unique (url)
 );
@@ -42,8 +43,9 @@ create table if not exists venel.roles
 (
     id          int auto_increment
         primary key,
-    name        varchar(255)            not null,
-    description varchar(512) default '' not null,
+    name        varchar(255)                             not null,
+    description varchar(512) default ''                  not null,
+    createdAt   datetime     default current_timestamp() not null,
     constraint roles_pk
         unique (name)
 );
@@ -76,6 +78,19 @@ create table if not exists venel.users
     archived       tinyint(1) default 0                   not null,
     constraint username
         unique (username)
+);
+
+create table if not exists venel.bridgedUsers
+(
+    instanceId bigint not null,
+    userId     bigint not null,
+    primary key (instanceId, userId),
+    constraint bridgedUsers_bridgeInstances_id_fk
+        foreign key (userId) references venel.bridgeInstances (id)
+            on delete cascade,
+    constraint bridgedUsers_users_id_fk
+        foreign key (instanceId) references venel.users (id)
+            on delete cascade
 );
 
 create table if not exists venel.channelMembers
@@ -158,8 +173,9 @@ create index if not exists senderId
 
 create table if not exists venel.userRoles
 (
-    userId bigint not null,
-    roleId int    not null,
+    userId    bigint                               not null,
+    roleId    int                                  not null,
+    createdAt datetime default current_timestamp() not null,
     constraint userRoles_roles_id_fk
         foreign key (roleId) references venel.roles (id)
             on delete cascade,

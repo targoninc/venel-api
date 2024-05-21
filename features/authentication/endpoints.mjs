@@ -233,6 +233,22 @@ export class AuthEndpoints {
     /**
      * @param {MariaDbDatabase} db
      * @returns {(function(*, *): Promise<void>)|*}
+     * @swagger
+     *   /api/permissions:
+     *     get:
+     *       description: Get all permissions
+     *       responses:
+     *         200:
+     *           description: All permissions
+     *           content:
+     *             application/json:
+     *               schema:
+     *                 type: object
+     *                 properties:
+     *                   permissions:
+     *                     type: array
+     *                     items:
+     *                       type: object
      */
     static getAllPermissions(db) {
         return async (req, res) => {
@@ -245,6 +261,22 @@ export class AuthEndpoints {
     /**
      * @param {MariaDbDatabase} db
      * @returns {(function(*, *): Promise<void>)|*}
+     * @swagger
+     *   /api/roles:
+     *     get:
+     *       description: Get all roles
+     *       responses:
+     *         200:
+     *           description: All roles
+     *           content:
+     *             application/json:
+     *               schema:
+     *                 type: object
+     *                 properties:
+     *                   roles:
+     *                     type: array
+     *                     items:
+     *                       type: object
      */
     static getAllRoles(db) {
         return async (req, res) => {

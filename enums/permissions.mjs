@@ -34,5 +34,25 @@ export const Permissions = {
     removeUserFromRole: {
         name: "removeUserFromRole",
         description: "Can remove a user from a role."
+    },
+    addBridgedInstance: {
+        name: "addBridgedInstance",
+        description: "Can add a bridged instance."
+    },
+    removeBridgedInstance: {
+        name: "removeBridgedInstance",
+        description: "Can remove a bridged instance."
+    },
+    toggleBridgeInstanceAllowlist: {
+        name: "toggleBridgeInstanceAllowlist",
+        description: "Can toggle the allowlist of a bridged instance."
+    },
+    addBridgedInstanceUser: {
+        name: "addBridgedInstanceUser",
+        description: "Can add an allowed user to a bridged instance."
+    },
+    removeBridgedInstanceUser: {
+        name: "removeBridgedInstanceUser",
+        description: "Can remove an allowed user from a bridged instance."
     }
 }
