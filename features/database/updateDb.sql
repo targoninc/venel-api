@@ -30,15 +30,16 @@ create table if not exists venel.reactions
 
 create table if not exists venel.users
 (
-    id           bigint auto_increment
+    id             bigint auto_increment
         primary key,
-    username     varchar(255)                          not null,
-    phoneNumber  varchar(255)                          null,
-    passwordHash varchar(64)                           not null,
-    displayname  varchar(255)                          null,
-    description  text                                  null,
-    createdAt    timestamp default current_timestamp() not null,
-    updatedAt    timestamp default current_timestamp() not null on update current_timestamp(),
+    username       varchar(255)                          not null,
+    phoneNumber    varchar(255)                          null,
+    passwordHash   varchar(64)                           not null,
+    displayname    varchar(255)                          null,
+    description    text                                  null,
+    createdAt      timestamp default current_timestamp() not null,
+    updatedAt      timestamp default current_timestamp() not null on update current_timestamp(),
+    registrationIp varchar(128)                          null,
     constraint username
         unique (username)
 );

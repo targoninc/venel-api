@@ -27,8 +27,9 @@ export class AuthenticationFeature {
 
         app.post("/api/authorize", AuthEndpoints.authorizeUser(db));
         app.post("/api/register", AuthEndpoints.registerUser(db));
+        app.post("/api/updateUser", AuthEndpoints.updateUser(db));
         app.post("/api/logout", AuthEndpoints.logout());
-        app.get("/api/isAuthorized", AuthEndpoints.isAuthorized());
+        app.get("/api/getUser", AuthEndpoints.getUser());
 
         AuthenticationFeature.addSwagger(__dirname, app);
         return app;

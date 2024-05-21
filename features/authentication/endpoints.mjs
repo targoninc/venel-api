@@ -32,22 +32,23 @@ export class AuthEndpoints {
 
     /**
      * @swagger
-     * /api/isAuthorized:
+     * /api/getUser:
      *  get:
-     *    description: Check if a user is authorized
+     *    description: Get the user object
      *    responses:
      *      200:
-     *        description: User is authorized
+     *        description: The user object
      *      401:
      *        description: Unauthorized
      */
-    static isAuthorized() {
+    static getUser() {
         return (req, res) => {
             if (req.isAuthenticated()) {
                 res.send({user: req.user});
                 return;
             }
-            res.send({});
+            res.status(401);
+            res.send({error: "Not authenticated"});
         };
     }
 
@@ -120,6 +121,32 @@ export class AuthEndpoints {
         }
     }
 
+    /** @swagger
+     *  /api/register:
+     *  post:
+     *    description: Register a user
+     *    parameters:
+     *      - name: user_info
+     *        in: body
+     *        required: true
+     *        schema:
+     *          type: object
+     *          required:
+     *            - username
+     *            - password
+     *          properties:
+     *            username:
+     *              type: string
+     *              minLength: 3
+     *              maxLength: 255
+     *              default: "myusername"
+     *            password:
+     *              type: string
+     *              format: password
+     *              minLength: 16
+     *              maxLength: 64
+     *              default: "testpassword1234"
+     */
     static registerUser(db) {
         return async (req, res, next) => {
             const cleanUsername = req.body.username.toLowerCase();
@@ -131,7 +158,19 @@ export class AuthEndpoints {
                 return res.send({error: "Username already exists on this instance"});
             }
 
-            await AuthActions.registerUser(req, db, cleanUsername);
+            const passwordMinLength = 16;
+            const passwordMaxLength = 64;
+            const passwordMustContainNumbers = true;
+            if (req.body.password < passwordMinLength) {
+                return res.send({error: `Password must be at least ${passwordMinLength} characters long`});
+            }
+            if (req.body.password > passwordMaxLength) {
+                return res.send({error: `Password must be at most ${passwordMaxLength} characters long`});
+            }
+            if (passwordMustContainNumbers && !/\d/.test(req.body.password)) {
+                return res.send({error: "Password must contain at least one number"});
+            }
+            await AuthActions.registerUser(req, db, cleanUsername, req.body.password);
 
             passport.authenticate("local", async (err, user) => {
                 if (err) {
@@ -140,6 +179,31 @@ export class AuthEndpoints {
                 }
                 req.logIn(user, AuthEndpoints.requestLogin(next, db, req, res, false, user));
             })(req, res, next);
+        }
+    }
+
+    static updateUser(db) {
+        return async (req, res) => {
+            const user = req.user;
+            const {username, displayname, description} = req.body;
+            if (username) {
+                if (username.length < 3) {
+                    return res.send({error: "Username must be at least 3 characters long"});
+                }
+                const existing = await db.getUserByUsername(username);
+                if (existing) {
+                    return res.send({error: "Username already exists on this instance"});
+                }
+                await db.updateUserUsername(user.id, username);
+            }
+            if (displayname) {
+                await db.updateUserDisplayname(user.id, displayname);
+            }
+            if (description) {
+                await db.updateUserDescription(user.id, description);
+            }
+
+            res.send({user: await db.getUserById(user.id)});
         }
     }
 }

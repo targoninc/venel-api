@@ -1,10 +1,10 @@
 import {IP} from "../../tooling/IP.mjs";
-import bcrypt from "bcryptjs";
+import {hash} from 'bcryptjs';
 
 export class AuthActions {
-    static async registerUser(req, db, cleanUsername) {
+    static async registerUser(req, db, cleanUsername, password) {
         const ip = IP.get(req);
-        const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+        const hashedPassword = hash(password, 10);
         await db.insertUser(cleanUsername, hashedPassword, ip);
     }
 

@@ -1,4 +1,5 @@
 import passportLocal from "passport-local";
+import {compare} from "bcryptjs";
 
 const LocalStrategy = passportLocal.Strategy;
 
@@ -9,7 +10,7 @@ export function PassportStrategy(db) {
             if (!user) {
                 return done(null, false, {message: "Incorrect username."});
             }
-            if (!bcrypt.compareSync(password, user.password_hash)) {
+            if (!compare(password, user.password_hash)) {
                 return done(null, false, {message: "Incorrect password."});
             }
             return done(null, user);
