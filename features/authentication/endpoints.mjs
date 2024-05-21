@@ -53,6 +53,7 @@ export class AuthEndpoints {
     }
 
     /**
+     * @returns {Users}
      * @swagger
      * /api/authorize:
      *  post:
