@@ -21,11 +21,39 @@ create table if not exists venel.channels
         foreign key (bridgeInstanceId) references venel.bridgeInstances (id)
 );
 
+create table if not exists venel.permissions
+(
+    id          bigint auto_increment
+        primary key,
+    name        varchar(255)            not null,
+    description varchar(512) default '' not null
+);
+
 create table if not exists venel.reactions
 (
     id      bigint auto_increment
         primary key,
     content varchar(255) null
+);
+
+create table if not exists venel.roles
+(
+    id          int auto_increment
+        primary key,
+    name        varchar(255)            not null,
+    description varchar(512) default '' not null
+);
+
+create table if not exists venel.rolePermissions
+(
+    roleId       int    not null,
+    permissionId bigint not null,
+    constraint rolePermissions_permissions_id_fk
+        foreign key (permissionId) references venel.permissions (id)
+            on delete cascade,
+    constraint rolePermissions_roles_id_fk
+        foreign key (roleId) references venel.roles (id)
+            on delete cascade
 );
 
 create table if not exists venel.users
@@ -122,4 +150,16 @@ create index if not exists parentMessageId
 
 create index if not exists senderId
     on venel.messages (senderId);
+
+create table if not exists venel.userRoles
+(
+    userId bigint not null,
+    roleId int    not null,
+    constraint userRoles_roles_id_fk
+        foreign key (roleId) references venel.roles (id)
+            on delete cascade,
+    constraint userRoles_users_id_fk
+        foreign key (userId) references venel.users (id)
+            on delete cascade
+);
 

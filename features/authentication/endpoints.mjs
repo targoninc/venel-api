@@ -53,7 +53,7 @@ export class AuthEndpoints {
     }
 
     /**
-     * @returns {Users}
+     * @returns {function(*, *, *): Promise<Users>}
      * @swagger
      * /api/authorize:
      *  post:
