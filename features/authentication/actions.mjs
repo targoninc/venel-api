@@ -5,7 +5,7 @@ export class AuthActions {
     static async registerUser(req, db, cleanUsername, password) {
         const ip = IP.get(req);
         const hashedPassword = bcrypt.hashSync(password, 10);
-        await db.insertUser(cleanUsername, hashedPassword, ip);
+        await db.createUser(cleanUsername, hashedPassword, ip);
     }
 
     static checkAuthenticated = (req, res, next) => {

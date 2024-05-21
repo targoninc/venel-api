@@ -5,6 +5,7 @@ import {IP} from "../../tooling/IP.mjs";
 
 export class AuthEndpoints {
     /**
+     * @returns {function(Request, Response): void}
      * @swagger
      * /api/logout:
      *  post:
@@ -53,7 +54,7 @@ export class AuthEndpoints {
     }
 
     /**
-     * @returns {function(Request, Response, Function): Promise<User>}
+     * @returns {function(Request, Response, Function): Promise}
      * @swagger
      * /api/authorize:
      *  post:
@@ -136,7 +137,9 @@ export class AuthEndpoints {
         }
     }
 
-    /** @swagger
+    /**
+     * @returns {function(Request, Response, Function): Promise}
+     * @swagger
      *  /api/register:
      *  post:
      *    description: Register a user
@@ -228,6 +231,27 @@ export class AuthEndpoints {
             const outUser = await db.getUserById(user.id);
             res.send({
                 user: safeUser(outUser)
+            });
+        }
+    }
+
+    /**
+     *
+     * @param {MariaDbDatabase} db
+     * @returns {(function(*, *): Promise<void>)|*}
+     */
+    static getAllPermissions(db) {
+        return async (req, res) => {
+            res.send({
+                permissions: await db.getPermissions()
+            });
+        }
+    }
+
+    static getAllRoles(db) {
+        return async (req, res) => {
+            res.send({
+                roles: await db.getRoles()
             });
         }
     }

@@ -2,6 +2,8 @@ import {MariaDbDatabase} from "./database/mariaDbDatabase.mjs";
 import fs from "fs";
 import path from "path";
 import {CLI} from "../tooling/CLI.mjs";
+import {Permissions} from "../enums/permissions.mjs";
+import {DefaultRoles} from "../enums/defaultRoles.mjs";
 
 export class DatabaseFeature {
     static async enable(__dirname) {
@@ -25,6 +27,40 @@ export class DatabaseFeature {
             }
             await db.query(query.trim());
         }
+        await DatabaseFeature.createDefaultData(db);
         CLI.success("Database is up to date.");
+    }
+
+    static async createDefaultData(db) {
+        CLI.info("Creating default data...");
+        await DatabaseFeature.createDefaultPermissions(db);
+        await DatabaseFeature.createDefaultRoles(db);
+    }
+
+    /**
+     * @param {MariaDbDatabase} db
+     * @returns {Promise<void>}
+     */
+    static async createDefaultPermissions(db) {
+        const permissions = Object.values(Permissions);
+        for (const permission of permissions) {
+            await db.createPermission(permission);
+        }
+    }
+
+    /**
+     * @param {MariaDbDatabase} db
+     * @returns {Promise<void>}
+     */
+    static async createDefaultRoles(db) {
+        const roles = Object.values(DefaultRoles);
+        for (const role of roles) {
+            await db.createRole(role.name, role.description);
+            for (const permission of role.permissions) {
+                await db.query(`INSERT INTO rolePermissions (roleId, permissionId) VALUES 
+((SELECT id FROM roles WHERE name = ?), (SELECT id FROM permissions WHERE name = ?)) ON DUPLICATE KEY UPDATE roleId = roleId`,
+                    [role.name, permission]);
+            }
+        }
     }
 }

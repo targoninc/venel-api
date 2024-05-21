@@ -53,7 +53,7 @@ export class MariaDbDatabase {
         return rows ? rows[0] : null;
     }
 
-    async insertUser(username, hashedPassword, ip) {
+    async createUser(username, hashedPassword, ip) {
         await this.query("INSERT INTO venel.users (username, passwordHash, registrationIp) VALUES (?, ?, ?)", [username, hashedPassword, ip]);
     }
 
@@ -71,5 +71,47 @@ export class MariaDbDatabase {
 
     async updateUserDescription(id, description) {
         await this.query("UPDATE venel.users SET description = ? WHERE id = ?", [description, id]);
+    }
+
+    async createRole(name, description) {
+        await this.query("INSERT INTO venel.roles (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = name", [name, description]);
+    }
+
+    async createPermission(name) {
+        await this.query("INSERT INTO venel.permissions (name) VALUES (?) ON DUPLICATE KEY UPDATE name = name", [name]);
+    }
+
+    async createRolePermission(roleId, permissionId) {
+        await this.query("INSERT INTO venel.rolePermissions (roleId, permissionId) VALUES (?, ?) ON DUPLICATE KEY UPDATE roleId = roleId", [roleId, permissionId]);
+    }
+
+    async createUserRole(userId, roleId) {
+        await this.query("INSERT INTO venel.userRoles (userId, roleId) VALUES (?, ?)", [userId, roleId]);
+    }
+
+    async deleteUserRole(userId, roleId) {
+        await this.query("DELETE FROM venel.userRoles WHERE userId = ? AND roleId = ?", [userId, roleId]);
+    }
+
+    /**
+     * @returns {Promise<Permission[]|undefined>}
+     */
+    async getPermissions() {
+        return await this.query("SELECT * FROM venel.permissions");
+    }
+
+    /**
+     * @returns {Promise<Role[]|undefined>}
+     */
+    async getRoles() {
+        return await this.query("SELECT * FROM venel.roles");
+    }
+
+    /**
+     * @param userId
+     * @returns {Promise<Role[]|undefined>}
+     */
+    async getUserRoles(userId) {
+        return await this.query("SELECT * FROM venel.roles INNER JOIN venel.userRoles ON roles.id = userRoles.roleId WHERE userRoles.userId = ?", [userId]);
     }
 }

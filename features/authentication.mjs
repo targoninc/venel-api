@@ -30,6 +30,8 @@ export class AuthenticationFeature {
         app.post("/api/updateUser", AuthEndpoints.updateUser(db));
         app.post("/api/logout", AuthEndpoints.logout());
         app.get("/api/getUser", AuthEndpoints.getUser());
+        app.get("/api/permissions", AuthEndpoints.getAllPermissions(db));
+        app.get("/api/roles", AuthEndpoints.getAllRoles(db));
 
         AuthenticationFeature.addSwagger(__dirname, app);
         return app;
