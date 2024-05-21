@@ -58,14 +58,26 @@ export class AuthEndpoints {
      *  post:
      *    description: Authorize a user
      *    parameters:
-     *      - name: username
+     *      - name: user_info
      *        in: body
      *        required: true
-     *        type: string
-     *      - name: password
-     *        in: body
-     *        required: true
-     *        type: string
+     *        schema:
+     *          type: object
+     *          required:
+     *            - username
+     *            - password
+     *          properties:
+     *            username:
+     *              type: string
+     *              minLength: 3
+     *              maxLength: 255
+     *              default: "myusername"
+     *            password:
+     *              type: string
+     *              format: password
+     *              minLength: 16
+     *              maxLength: 64
+     *              default: "testpassword1234"
      *    responses:
      *      200:
      *        description: User authorized successfully

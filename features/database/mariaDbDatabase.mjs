@@ -25,7 +25,10 @@ export class MariaDbDatabase {
         let conn;
         try {
             conn = await this.pool.getConnection();
-            return await conn.query(sql, params);
+            return await conn.query({
+                sql,
+                supportBigNumbers: true
+            }, params);
         } catch (e) {
             throw e;
         } finally {
@@ -50,7 +53,7 @@ export class MariaDbDatabase {
     }
 
     async updateUserIp(id, ip) {
-        await this.query("UPDATE venel.users SET ip = ? WHERE id = ?", [ip, id]);
+        await this.query("UPDATE venel.users SET lastLoginIp = ? WHERE id = ?", [ip, id]);
     }
 
     async updateUserUsername(id, username) {

@@ -40,6 +40,7 @@ create table if not exists venel.users
     createdAt      timestamp default current_timestamp() not null,
     updatedAt      timestamp default current_timestamp() not null on update current_timestamp(),
     registrationIp varchar(128)                          null,
+    lastLoginIp    varchar(128)                          null,
     constraint username
         unique (username)
 );
