@@ -53,7 +53,7 @@ export class AuthEndpoints {
     }
 
     /**
-     * @returns {function(Request, Response, Function): Promise<User>}
+     * @param {MariaDbDatabase} db
      * @swagger
      * /api/authorize:
      *  post:
@@ -86,18 +86,32 @@ export class AuthEndpoints {
      *        description: Unauthorized
      */
     static authorizeUser(db) {
-        return async (req, res, next) => {
+        /**
+         * @typedef {{ body: T } & import("passport/lib/http/request.js")} Request<T>
+         * @template T
+         */
+
+        /**
+         * @param {Request<{username: String}>} req
+         * @param {Response} res
+         * @param {Function} next
+         * @returns {Promise<void>}
+         */
+        async function authUser(req, res, next) {
             const cleanUsername = req.body.username.toLowerCase();
             if (cleanUsername.length < 3) {
                 res.send({error: "Username must be at least 3 characters long"});
+
                 return;
             }
             const existing = await db.getUserByUsername(cleanUsername);
             if (!existing) {
                 res.send({error: "This username does not exist on this instance"});
+
                 return;
             }
-            if (existing && !existing.ip) {
+
+            if (!existing.lastLoginIp) {
                 const ip = IP.get(req);
                 await db.updateUserIp(existing.id, ip);
             }
@@ -114,6 +128,8 @@ export class AuthEndpoints {
                 req.logIn(user, AuthEndpoints.requestLogin(next, db, req, res, existing, user));
             })(req, res, next);
         }
+
+        return authUser;
     }
 
     static requestLogin(next, db, req, res, existing, user) {

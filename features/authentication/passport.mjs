@@ -6,6 +6,7 @@ const LocalStrategy = passportLocal.Strategy;
 
 export function PassportStrategy(db) {
     return new LocalStrategy(
+        {},
         async (username, password, done) => {
             const user = await db.getUserByUsername(username);
             if (!user) {
