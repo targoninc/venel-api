@@ -3,6 +3,7 @@
 ## Environment variables
 
 ```apacheconf
+MYSQL_HOST=mariadb
 MYSQL_ROOT_PASSWORD=myrootpassword
 MYSQL_DATABASE=venel
 MYSQL_USER=myuser
