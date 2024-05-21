@@ -5,6 +5,9 @@ import session from "express-session";
 import passport from "passport";
 import {CLI} from "../tooling/CLI.mjs";
 import {IP} from "../tooling/IP.mjs";
+import swaggerUI from 'swagger-ui-express';
+import {swaggerOptions} from "../swagger.mjs";
+import swaggerJsDoc from "swagger-jsdoc";
 
 const LocalStrategy = passportLocal.Strategy;
 
@@ -55,10 +58,60 @@ export class AuthenticationFeature {
         passport.serializeUser(PassportSerializeUser());
         passport.deserializeUser(PassportDeserializeUser(db));
 
+        /**
+         * @swagger
+         * /api/authorize:
+         *  post:
+         *    description: Authorize a user
+         *    parameters:
+         *      - name: username
+         *        in: body
+         *        required: true
+         *        type: string
+         *      - name: password
+         *        in: body
+         *        required: true
+         *        type: string
+         *    responses:
+         *      200:
+         *        description: User authorized successfully
+         *      401:
+         *        description: Unauthorized
+         */
         app.post("/api/authorize", AuthenticationFeature.authorizeUser(db));
+
+        /**
+         * @swagger
+         * /api/logout:
+         *  post:
+         *    description: Log out a user
+         *    responses:
+         *      200:
+         *        description: User logged out successfully
+         */
         app.post("/api/logout", AuthenticationFeature.logout());
+
+        /**
+         * @swagger
+         * /api/isAuthorized:
+         *  get:
+         *    description: Check if a user is authorized
+         *    responses:
+         *      200:
+         *        description: User is authorized
+         *      401:
+         *        description: Unauthorized
+         */
         app.get("/api/isAuthorized", AuthenticationFeature.isAuthorized());
+
+        AuthenticationFeature.addSwagger(__dirname, app);
         return app;
+    }
+
+    static addSwagger(__dirname, app) {
+        swaggerOptions.apis.push(__dirname + '/features/authentication.mjs');
+        const swaggerSpecs = swaggerJsDoc(swaggerOptions);
+        app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
     }
 
     static logout() {

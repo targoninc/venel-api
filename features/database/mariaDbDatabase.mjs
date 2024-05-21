@@ -1,12 +1,14 @@
 import mariadb from 'mariadb';
+import {CLI} from "../../tooling/CLI.mjs";
 
 export class MariaDbDatabase {
     constructor(host = null, user = null, password = null, database = null, port = null) {
-        this.host = host || process.env.MARIADB_HOST;
+        this.host = host || process.env.MYSQL_HOST;
         this.port = port || 3306;
-        this.user = user || process.env.MARIADB_USER;
-        this.password = password || process.env.MARIADB_PASSWORD;
-        this.database = database || process.env.MARIADB_DB;
+        this.user = user || process.env.MYSQL_USER;
+        this.password = password || process.env.MYSQL_PASSWORD;
+        this.database = database || process.env.MYSQL_DATABASE;
+        CLI.info(`Set up MariaDB connection to ${this.host}:${this.port} with user ${this.user} and database ${this.database}.`);
     }
 
     async connect() {

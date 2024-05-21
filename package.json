@@ -17,6 +17,8 @@
     "mariadb": "^3.3.0",
     "mysql2": "^3.9.7",
     "passport": "^0.7.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
   }
 }
