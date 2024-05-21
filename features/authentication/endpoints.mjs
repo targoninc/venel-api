@@ -44,12 +44,7 @@ export class AuthEndpoints {
      */
     static getUser() {
         return (req, res) => {
-            if (req.isAuthenticated()) {
-                res.send({user: req.user});
-                return;
-            }
-            res.status(401);
-            res.send({error: "Not authenticated"});
+            res.send({user: req.user});
         };
     }
 
@@ -236,7 +231,6 @@ export class AuthEndpoints {
     }
 
     /**
-     *
      * @param {MariaDbDatabase} db
      * @returns {(function(*, *): Promise<void>)|*}
      */
@@ -248,11 +242,64 @@ export class AuthEndpoints {
         }
     }
 
+    /**
+     * @param {MariaDbDatabase} db
+     * @returns {(function(*, *): Promise<void>)|*}
+     */
     static getAllRoles(db) {
         return async (req, res) => {
             res.send({
                 roles: await db.getRoles()
             });
+        }
+    }
+
+    /**
+     * @param {MariaDbDatabase} db
+     * @returns {(function(*, *): Promise<void>)|*}
+     */
+    static createRole(db) {
+        return async (req, res) => {
+            const user = req.user;
+            const userPermissions = await db.getUserPermissions(user.id);
+            if (!userPermissions.some(p => p.name === Permissions.createRole.name)) {
+                res.status(403);
+                res.send({error: "You do not have permission to create a role"});
+                return;
+            }
+
+            const {name, description} = req.body;
+            if (!name) {
+                res.send({error: "Name is required"});
+                return;
+            }
+            await db.createRole(name, description);
+            res.send({message: "Role created successfully"});
+        }
+    }
+
+    /**
+     * @param {MariaDbDatabase} db
+     * @returns {(function(*, *): Promise<void>)|*}
+     */
+    static addPermissionToRole(db) {
+        return async (req, res) => {
+            const user = req.user;
+            const userPermissions = await db.getUserPermissions(user.id);
+            if (!userPermissions.some(p => p.name === Permissions.addPermissionToRole)) {
+                res.status(403);
+                res.send({error: "You do not have permission to add a permission to a role"});
+                return;
+            }
+
+            const {roleId, permissionId} = req.body;
+            if (!roleId || !permissionId) {
+                res.send({error: "roleId and permissionId are required"});
+                return;
+            }
+
+            await db.createRolePermission(roleId, permissionId);
+            res.send({message: "Permission added to role successfully"});
         }
     }
 }

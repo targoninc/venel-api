@@ -73,7 +73,7 @@ export class MariaDbDatabase {
         await this.query("UPDATE venel.users SET description = ? WHERE id = ?", [description, id]);
     }
 
-    async createRole(name, description) {
+    async createRole(name, description = "") {
         await this.query("INSERT INTO venel.roles (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = name", [name, description]);
     }
 
@@ -113,5 +113,24 @@ export class MariaDbDatabase {
      */
     async getUserRoles(userId) {
         return await this.query("SELECT * FROM venel.roles INNER JOIN venel.userRoles ON roles.id = userRoles.roleId WHERE userRoles.userId = ?", [userId]);
+    }
+
+    /**
+     * @param roleId
+     * @returns {Promise<Permission[]|undefined>}
+     */
+    async getRolePermissions(roleId) {
+        return await this.query(`SELECT * FROM venel.permissions INNER JOIN venel.rolePermissions ON 
+permissions.id = rolePermissions.permissionId WHERE rolePermissions.roleId = ?`, [roleId]);
+    }
+
+    /**
+     * @param userId
+     * @returns {Promise<Permission[]|undefined>}
+     */
+    async getUserPermissions(userId) {
+        return await this.query(`SELECT * FROM venel.permissions INNER JOIN venel.rolePermissions ON 
+permissions.id = rolePermissions.permissionId INNER JOIN venel.userRoles ON rolePermissions.roleId = userRoles.roleId 
+WHERE userRoles.userId = ?`, [userId]);
     }
 }
