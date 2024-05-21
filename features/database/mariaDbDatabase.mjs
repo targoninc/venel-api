@@ -19,12 +19,11 @@ export class MariaDbDatabase {
         });
     }
 
-    async query(sql, params) {
+    async query(sql, params = []) {
         let conn;
         try {
             conn = await this.pool.getConnection();
-            const [rows] = await conn.execute(sql, params);
-            return rows;
+            return await conn.query(sql, params);
         } catch (e) {
             throw e;
         } finally {

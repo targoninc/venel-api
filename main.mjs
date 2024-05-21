@@ -1,6 +1,7 @@
 import {fileURLToPath} from "url";
 import path from "path";
 import dotenv from "dotenv";
+import {Features} from "./features.mjs";
 
 dotenv.config();
 

@@ -1,8 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS venel;
 
-USE venel;
-
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS venel.users (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(255) UNIQUE,
   displayname VARCHAR(255),
@@ -12,49 +10,49 @@ CREATE TABLE IF NOT EXISTS users (
   passwordHash CHAR(60)
 );
 
-CREATE TABLE IF NOT EXISTS hardwareKeys (
+CREATE TABLE IF NOT EXISTS venel.hardwareKeys (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   userId BIGINT,
   keyData VARBINARY(255),
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (userId) REFERENCES users (id)
+  FOREIGN KEY (userId) REFERENCES venel.users (id)
 );
 
-CREATE TABLE IF NOT EXISTS messages (
+CREATE TABLE IF NOT EXISTS venel.messages (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   parentMessageId BIGINT,
   senderId BIGINT,
   text TEXT,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (parentMessageId) REFERENCES messages (id),
-  FOREIGN KEY (senderId) REFERENCES users (id)
+  FOREIGN KEY (parentMessageId) REFERENCES venel.messages (id),
+  FOREIGN KEY (senderId) REFERENCES venel.users (id)
 );
 
-CREATE TABLE IF NOT EXISTS imageAttachments (
+CREATE TABLE IF NOT EXISTS venel.imageAttachments (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   messageId BIGINT,
   binaryContent MEDIUMBLOB,
-  FOREIGN KEY (messageId) REFERENCES messages (id)
+  FOREIGN KEY (messageId) REFERENCES venel.messages (id)
 );
 
-CREATE TABLE IF NOT EXISTS audioAttachments (
+CREATE TABLE IF NOT EXISTS venel.audioAttachments (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   messageId BIGINT,
   binaryContent MEDIUMBLOB,
-  FOREIGN KEY (messageId) REFERENCES messages (id)
+  FOREIGN KEY (messageId) REFERENCES venel.messages (id)
 );
 
-CREATE TABLE IF NOT EXISTS reactions (
+CREATE TABLE IF NOT EXISTS venel.reactions (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   content VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS messageReactions (
+CREATE TABLE IF NOT EXISTS venel.messageReactions (
   messageId BIGINT,
   reactionId BIGINT,
   PRIMARY KEY (messageId, reactionId),
-  FOREIGN KEY (messageId) REFERENCES messages (id),
-  FOREIGN KEY (reactionId) REFERENCES reactions (id)
+  FOREIGN KEY (messageId) REFERENCES venel.messages (id),
+  FOREIGN KEY (reactionId) REFERENCES venel.reactions (id)
 );
