@@ -44,7 +44,7 @@ export class DatabaseFeature {
     static async createDefaultPermissions(db) {
         const permissions = Object.values(Permissions);
         for (const permission of permissions) {
-            await db.createPermission(permission);
+            await db.createPermission(permission.name, permission.description);
         }
     }
 
@@ -59,7 +59,7 @@ export class DatabaseFeature {
             for (const permission of role.permissions) {
                 await db.query(`INSERT INTO rolePermissions (roleId, permissionId) VALUES 
 ((SELECT id FROM roles WHERE name = ?), (SELECT id FROM permissions WHERE name = ?)) ON DUPLICATE KEY UPDATE roleId = roleId`,
-                    [role.name, permission]);
+                    [role.name, permission.name]);
             }
         }
     }

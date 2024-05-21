@@ -77,8 +77,8 @@ export class MariaDbDatabase {
         await this.query("INSERT INTO venel.roles (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = name", [name, description]);
     }
 
-    async createPermission(name) {
-        await this.query("INSERT INTO venel.permissions (name) VALUES (?) ON DUPLICATE KEY UPDATE name = name", [name]);
+    async createPermission(name, description) {
+        await this.query("INSERT INTO venel.permissions (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = name", [name, description]);
     }
 
     async createRolePermission(roleId, permissionId) {
