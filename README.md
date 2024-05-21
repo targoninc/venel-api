@@ -2,6 +2,7 @@
 
 ## Environment variables
 
+Create a `.env` file in the root of the project with the following content:
 ```apacheconf
 MYSQL_HOST=mariadb
 MYSQL_ROOT_PASSWORD=myrootpassword
