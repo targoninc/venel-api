@@ -1,6 +1,6 @@
 import passport from "passport";
 import {CLI} from "../../tooling/CLI.mjs";
-import {AuthActions} from "./actions.mjs";
+import {AuthActions, safeUser} from "./actions.mjs";
 import {IP} from "../../tooling/IP.mjs";
 
 export class AuthEndpoints {
@@ -53,7 +53,7 @@ export class AuthEndpoints {
     }
 
     /**
-     * @returns {function(*, *, *): Promise<Users>}
+     * @returns {function(Request, Response, Function): Promise<User>}
      * @swagger
      * /api/authorize:
      *  post:
@@ -89,7 +89,8 @@ export class AuthEndpoints {
         return async (req, res, next) => {
             const cleanUsername = req.body.username.toLowerCase();
             if (cleanUsername.length < 3) {
-                return res.send({error: "Username must be at least 3 characters long"});
+                res.send({error: "Username must be at least 3 characters long"});
+                return;
             }
             const existing = await db.getUserByUsername(cleanUsername);
             if (!existing) {
@@ -107,7 +108,8 @@ export class AuthEndpoints {
                     return next(err);
                 }
                 if (!user) {
-                    return res.send({error: "Invalid username or password"});
+                    res.send({error: "Invalid username or password"});
+                    return;
                 }
                 req.logIn(user, AuthEndpoints.requestLogin(next, db, req, res, existing, user));
             })(req, res, next);
@@ -128,7 +130,7 @@ export class AuthEndpoints {
                 outUser.justRegistered = true;
             }
 
-            return res.send({
+            res.send({
                 user: outUser
             });
         }
@@ -164,24 +166,29 @@ export class AuthEndpoints {
         return async (req, res, next) => {
             const cleanUsername = req.body.username.toLowerCase();
             if (cleanUsername.length < 3) {
-                return res.send({error: "Username must be at least 3 characters long"});
+                res.send({error: "Username must be at least 3 characters long"});
+                return;
             }
             const existing = await db.getUserByUsername(cleanUsername);
             if (existing) {
-                return res.send({error: "Username already exists on this instance"});
+                res.send({error: "Username already exists on this instance"});
+                return;
             }
 
             const passwordMinLength = 16;
             const passwordMaxLength = 64;
             const passwordMustContainNumbers = true;
             if (req.body.password < passwordMinLength) {
-                return res.send({error: `Password must be at least ${passwordMinLength} characters long`});
+                res.send({error: `Password must be at least ${passwordMinLength} characters long`});
+                return;
             }
             if (req.body.password > passwordMaxLength) {
-                return res.send({error: `Password must be at most ${passwordMaxLength} characters long`});
+                res.send({error: `Password must be at most ${passwordMaxLength} characters long`});
+                return;
             }
             if (passwordMustContainNumbers && !/\d/.test(req.body.password)) {
-                return res.send({error: "Password must contain at least one number"});
+                res.send({error: "Password must contain at least one number"});
+                return;
             }
             await AuthActions.registerUser(req, db, cleanUsername, req.body.password);
 
@@ -201,11 +208,13 @@ export class AuthEndpoints {
             const {username, displayname, description} = req.body;
             if (username) {
                 if (username.length < 3) {
-                    return res.send({error: "Username must be at least 3 characters long"});
+                    res.send({error: "Username must be at least 3 characters long"});
+                    return;
                 }
                 const existing = await db.getUserByUsername(username);
                 if (existing) {
-                    return res.send({error: "Username already exists on this instance"});
+                    res.send({error: "Username already exists on this instance"});
+                    return;
                 }
                 await db.updateUserUsername(user.id, username);
             }
@@ -216,7 +225,10 @@ export class AuthEndpoints {
                 await db.updateUserDescription(user.id, description);
             }
 
-            res.send({user: await db.getUserById(user.id)});
+            const outUser = await db.getUserById(user.id);
+            res.send({
+                user: safeUser(outUser)
+            });
         }
     }
 }

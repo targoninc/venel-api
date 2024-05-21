@@ -1,12 +1,12 @@
 export namespace Venel {
     export type Id = number;
 
-    export interface BridgeInstances {
+    export interface BridgeInstance {
         id: Id;
         url: string;
     }
 
-    export interface Channels {
+    export interface Channel {
         id: Id;
         bridged: boolean;
         bridgeInstanceId?: Id;
@@ -14,12 +14,12 @@ export namespace Venel {
         name?: string;
     }
 
-    export interface Reactions {
+    export interface Reaction {
         id: Id;
         content?: string;
     }
 
-    export interface Users {
+    export interface User {
         id: Id;
         username: string;
         phoneNumber?: string;
@@ -32,12 +32,12 @@ export namespace Venel {
         lastLoginIp?: string;
     }
 
-    export interface ChannelMembers {
+    export interface ChannelMember {
         channelId: Id;
         userId: Id;
     }
 
-    export interface Messages {
+    export interface Message {
         id: Id;
         channelId: Id;
         parentMessageId?: Id;
@@ -47,20 +47,42 @@ export namespace Venel {
         updatedAt: Date;
     }
 
-    export interface AudioAttachments {
+    export interface AudioAttachment {
         id: Id;
         messageId?: Id;
         binaryContent?: any;
     }
 
-    export interface ImageAttachments {
+    export interface ImageAttachment {
         id: Id;
         messageId?: Id;
         binaryContent?: any;
     }
 
-    export interface MessageReactions {
+    export interface MessageReaction {
         messageId: Id;
         reactionId: Id;
+    }
+
+    export interface Permission {
+        id: Id;
+        name: string;
+        description: string;
+    }
+
+    export interface Role {
+        id: Id;
+        name: string;
+        description: string;
+    }
+
+    export interface RolePermission {
+        roleId: Id;
+        permissionId: Id;
+    }
+
+    export interface UserRole {
+        userId: Id;
+        roleId: Id;
     }
 }

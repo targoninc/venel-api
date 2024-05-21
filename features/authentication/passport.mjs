@@ -1,5 +1,6 @@
 import passportLocal from "passport-local";
 import bcrypt from "bcryptjs";
+import {safeUser} from "./actions.mjs";
 
 const LocalStrategy = passportLocal.Strategy;
 
@@ -28,6 +29,6 @@ export function PassportDeserializeUser(db) {
     return async (id, done) => {
         const user = await db.getUserById(id);
         delete user.passwordHash;
-        done(null, user);
+        done(null, safeUser(user));
     }
 }

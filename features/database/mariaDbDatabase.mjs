@@ -43,6 +43,11 @@ export class MariaDbDatabase {
         return rows ? rows[0] : null;
     }
 
+    /**
+     *
+     * @param id
+     * @returns {Promise<User|null>}
+     */
     async getUserById(id) {
         const rows = await this.query("SELECT * FROM venel.users WHERE id = ?", [id]);
         return rows ? rows[0] : null;

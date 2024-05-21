@@ -16,3 +16,19 @@ export class AuthActions {
         res.send({error: "Not authenticated"});
     }
 }
+
+/**
+ *
+ * @param {User} user
+ * @returns {User}
+ */
+export function safeUser(user) {
+    return {
+        id: user.id,
+        username: user.username,
+        displayname: user.displayname,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        description: user.description,
+    };
+}
