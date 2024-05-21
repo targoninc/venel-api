@@ -31,10 +31,15 @@ export class AuthenticationFeature {
         app.post("/api/updateUser", AuthEndpoints.updateUser(db));
         app.post("/api/logout", AuthEndpoints.logout());
         app.get("/api/getUser", AuthActions.checkAuthenticated, AuthEndpoints.getUser());
+        app.post("/api/updateUser", AuthActions.checkAuthenticated, AuthEndpoints.updateUser(db));
+
+        // Permissions and roles
         app.get("/api/permissions", AuthEndpoints.getAllPermissions(db));
         app.get("/api/roles", AuthEndpoints.getAllRoles(db));
         app.post("/api/createRole", AuthActions.checkAuthenticated, AuthEndpoints.createRole(db));
         app.post("/api/addPermissionToRole", AuthActions.checkAuthenticated, AuthEndpoints.addPermissionToRole(db));
+        app.get("/api/getUserPermissions", AuthActions.checkAuthenticated, AuthEndpoints.getUserPermissions(db));
+        app.get("/api/getUserRoles", AuthActions.checkAuthenticated, AuthEndpoints.getUserRoles(db));
 
         AuthenticationFeature.addSwagger(__dirname, app);
         return app;

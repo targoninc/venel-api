@@ -54,6 +54,7 @@ create table if not exists venel.rolePermissions
 (
     roleId       int    not null,
     permissionId bigint not null,
+    primary key (permissionId, roleId),
     constraint rolePermissions_permissions_id_fk
         foreign key (permissionId) references venel.permissions (id)
             on delete cascade,

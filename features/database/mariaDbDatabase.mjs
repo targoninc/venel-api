@@ -38,6 +38,13 @@ export class MariaDbDatabase {
         }
     }
 
+    /**
+     * @returns {Promise<User|undefined>}
+     */
+    async getUsers() {
+        return await this.query("SELECT * FROM venel.users");
+    }
+
     async getUserByUsername(username) {
         const rows = await this.query("SELECT * FROM venel.users WHERE username = ?", [username]);
         return rows ? rows[0] : null;
@@ -89,6 +96,15 @@ export class MariaDbDatabase {
         await this.query("INSERT INTO venel.userRoles (userId, roleId) VALUES (?, ?)", [userId, roleId]);
     }
 
+    /**
+     * @param name
+     * @returns {Promise<Role|null>}
+     */
+    async getRoleByName(name) {
+        const rows = await this.query("SELECT * FROM venel.roles WHERE name = ?", [name]);
+        return rows ? rows[0] : null;
+    }
+
     async deleteUserRole(userId, roleId) {
         await this.query("DELETE FROM venel.userRoles WHERE userId = ? AND roleId = ?", [userId, roleId]);
     }
@@ -112,7 +128,7 @@ export class MariaDbDatabase {
      * @returns {Promise<Role[]|undefined>}
      */
     async getUserRoles(userId) {
-        return await this.query("SELECT * FROM venel.roles INNER JOIN venel.userRoles ON roles.id = userRoles.roleId WHERE userRoles.userId = ?", [userId]);
+        return await this.query("SELECT r.id, r.name, r.description FROM venel.roles r INNER JOIN venel.userRoles ur ON r.id = ur.roleId WHERE ur.userId = ?", [userId]);
     }
 
     /**
@@ -129,8 +145,8 @@ permissions.id = rolePermissions.permissionId WHERE rolePermissions.roleId = ?`,
      * @returns {Promise<Permission[]|undefined>}
      */
     async getUserPermissions(userId) {
-        return await this.query(`SELECT * FROM venel.permissions INNER JOIN venel.rolePermissions ON 
-permissions.id = rolePermissions.permissionId INNER JOIN venel.userRoles ON rolePermissions.roleId = userRoles.roleId 
-WHERE userRoles.userId = ?`, [userId]);
+        return await this.query(`SELECT p.id, p.name, p.description FROM venel.permissions p INNER JOIN venel.rolePermissions rp ON 
+p.id = rp.permissionId INNER JOIN venel.userRoles ur ON rp.roleId = ur.roleId 
+WHERE ur.userId = ?`, [userId]);
     }
 }

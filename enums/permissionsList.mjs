@@ -1,4 +1,4 @@
-export const Permissions = {
+export const PermissionsList = {
     addUser: {
         name: "addUser",
         description: "Can add a user."
@@ -54,5 +54,9 @@ export const Permissions = {
     removeBridgedInstanceUser: {
         name: "removeBridgedInstanceUser",
         description: "Can remove an allowed user from a bridged instance."
-    }
+    },
+    getUserPermissions: {
+        name: "getUserPermissions",
+        description: "Can get the permissions of another user."
+    },
 }

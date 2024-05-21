@@ -2,6 +2,7 @@ import passport from "passport";
 import {CLI} from "../../tooling/CLI.mjs";
 import {AuthActions, safeUser} from "./actions.mjs";
 import {IP} from "../../tooling/IP.mjs";
+import {PermissionsList} from "../../enums/permissionsList.mjs";
 
 export class AuthEndpoints {
     /**
@@ -200,6 +201,40 @@ export class AuthEndpoints {
         }
     }
 
+    /**
+     * @param {MariaDbDatabase} db
+     * @returns {(function(*, *): Promise<void>)|*}
+     * @swagger
+     *   /api/updateUser:
+     *     post:
+     *       description: Update a user
+     *       parameters:
+     *         - name: user_info
+     *           in: body
+     *           required: true
+     *           schema:
+     *             type: object
+     *             properties:
+     *               username:
+     *                 type: string
+     *                 minLength: 3
+     *                 maxLength: 255
+     *                 default: "myusername"
+     *                 description: The new username
+     *                 required: false
+     *               displayname:
+     *                 type: string
+     *                 maxLength: 255
+     *                 default: "My Username"
+     *                 description: The new display name
+     *                 required: false
+     *               description:
+     *                 type: string
+     *                 maxLength: 255
+     *                 default: "I am a user"
+     *                 description: The new description
+     *                 required: false
+     */
     static updateUser(db) {
         return async (req, res) => {
             const user = req.user;
@@ -294,7 +329,7 @@ export class AuthEndpoints {
         return async (req, res) => {
             const user = req.user;
             const userPermissions = await db.getUserPermissions(user.id);
-            if (!userPermissions.some(p => p.name === Permissions.createRole.name)) {
+            if (!userPermissions.some(p => p.name === PermissionsList.createRole.name)) {
                 res.status(403);
                 res.send({error: "You do not have permission to create a role"});
                 return;
@@ -318,7 +353,7 @@ export class AuthEndpoints {
         return async (req, res) => {
             const user = req.user;
             const userPermissions = await db.getUserPermissions(user.id);
-            if (!userPermissions.some(p => p.name === Permissions.addPermissionToRole)) {
+            if (!userPermissions.some(p => p.name === PermissionsList.addPermissionToRole)) {
                 res.status(403);
                 res.send({error: "You do not have permission to add a permission to a role"});
                 return;
@@ -332,6 +367,127 @@ export class AuthEndpoints {
 
             await db.createRolePermission(roleId, permissionId);
             res.send({message: "Permission added to role successfully"});
+        }
+    }
+
+    /**
+     * @param {MariaDbDatabase} db
+     * @returns {(function(*, *): Promise<void>)|*}
+     */
+    static getRolePermissions(db) {
+        return async (req, res) => {
+            const {roleId} = req.params;
+            if (!roleId) {
+                res.send({error: "roleId is required"});
+                return;
+            }
+
+            res.send({
+                permissions: await db.getRolePermissions(roleId)
+            });
+        }
+    }
+
+    /**
+     * @param {MariaDbDatabase} db
+     * @returns {(function(*, *): Promise<void>)|*}
+     * @swagger
+     *   /api/getUserRoles:
+     *     get:
+     *       description: Get all roles for a given user
+     *       parameters:
+     *         - name: userId
+     *           in: query
+     *           required: true
+     *           schema:
+     *             type: string
+     *             default: 1
+     *             description: The id of the user
+     *       responses:
+     *         200:
+     *           description: All roles for the user
+     *           content:
+     *             application/json:
+     *               schema:
+     *                 type: object
+     *                 properties:
+     *                   roles:
+     *                     type: array
+     *                     items:
+     *                       type: object
+     */
+    static getUserRoles(db) {
+        return async (req, res) => {
+            const {userId} = req.query;
+            if (!userId) {
+                res.send({error: "userId is required"});
+                return;
+            }
+
+            const user = await db.getUserById(userId);
+            if (!user) {
+                res.send({error: "User not found"});
+                return;
+            }
+
+            res.send({
+                roles: await db.getUserRoles(userId)
+            });
+        }
+    }
+
+    /**
+     * @param {MariaDbDatabase} db
+     * @returns {(function(*, *): Promise<void>)|*}
+     * @swagger
+     *   /api/getUserPermissions:
+     *     get:
+     *       description: Get all permissions for a given user
+     *       parameters:
+     *         - name: userId
+     *           in: query
+     *           required: true
+     *           schema:
+     *             type: string
+     *             default: 1
+     *             description: The id of the user
+     *       responses:
+     *         200:
+     *           description: All permissions for the user
+     *           content:
+     *             application/json:
+     *               schema:
+     *                 type: object
+     *                 properties:
+     *                   permissions:
+     *                     type: array
+     *                     items:
+     *                       type: object
+     */
+    static getUserPermissions(db) {
+        return async (req, res) => {
+            const {userId} = req.query;
+            if (!userId) {
+                res.send({error: "userId is required"});
+                return;
+            }
+
+            const user = await db.getUserById(userId);
+            if (!user) {
+                res.send({error: "User not found"});
+                return;
+            }
+
+            const selfPermissions = await db.getUserPermissions(req.user.id);
+            if (!selfPermissions.some(p => p.name === PermissionsList.getUserPermissions.name)) {
+                res.status(403);
+                res.send({error: "You do not have permission to get user permissions for another user"});
+                return;
+            }
+
+            res.send({
+                permissions: await db.getUserPermissions(userId)
+            });
         }
     }
 }

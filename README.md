@@ -1,5 +1,7 @@
 # How to run
 
+This guide assumes you have Docker and Docker Compose installed and running on your machine.
+
 ## Environment variables
 
 Create a `.env` file in the root of the project with the following content:
@@ -19,14 +21,6 @@ docker-compose build --no-cache; docker-compose up -d
 ```
 
 ## Linux
-
-### With sudo
-
-```bash
-sudo docker-compose build --no-cache && sudo docker-compose up -d
-```
-
-### Without sudo
 
 ```bash
 docker-compose build --no-cache && docker-compose up -d

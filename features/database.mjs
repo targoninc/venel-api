@@ -2,7 +2,7 @@ import {MariaDbDatabase} from "./database/mariaDbDatabase.mjs";
 import fs from "fs";
 import path from "path";
 import {CLI} from "../tooling/CLI.mjs";
-import {Permissions} from "../enums/permissions.mjs";
+import {PermissionsList} from "../enums/permissionsList.mjs";
 import {DefaultRoles} from "../enums/defaultRoles.mjs";
 
 export class DatabaseFeature {
@@ -42,7 +42,7 @@ export class DatabaseFeature {
      * @returns {Promise<void>}
      */
     static async createDefaultPermissions(db) {
-        const permissions = Object.values(Permissions);
+        const permissions = Object.values(PermissionsList);
         for (const permission of permissions) {
             await db.createPermission(permission.name, permission.description);
         }
