@@ -1,58 +1,123 @@
 CREATE SCHEMA IF NOT EXISTS venel;
 
-CREATE TABLE IF NOT EXISTS venel.users (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(255) UNIQUE,
-  displayname VARCHAR(255),
-  description TEXT,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  passwordHash CHAR(60)
+create table if not exists venel.bridgeInstances
+(
+    id  bigint auto_increment
+        primary key,
+    url varchar(512) not null,
+    constraint bridgeInstances_pk_2
+        unique (url)
 );
 
-CREATE TABLE IF NOT EXISTS venel.hardwareKeys (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  userId BIGINT,
-  keyData VARBINARY(255),
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (userId) REFERENCES venel.users (id)
+create table if not exists venel.channels
+(
+    id               bigint auto_increment
+        primary key,
+    bridged          tinyint(1) default 0 not null,
+    bridgeInstanceId bigint               null,
+    bridgedChannelId bigint               null,
+    name             varchar(255)         null,
+    constraint channels_bridgeInstances_id_fk
+        foreign key (bridgeInstanceId) references venel.bridgeInstances (id)
 );
 
-CREATE TABLE IF NOT EXISTS venel.messages (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  parentMessageId BIGINT,
-  senderId BIGINT,
-  text TEXT,
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (parentMessageId) REFERENCES venel.messages (id),
-  FOREIGN KEY (senderId) REFERENCES venel.users (id)
+create table if not exists venel.reactions
+(
+    id      bigint auto_increment
+        primary key,
+    content varchar(255) null
 );
 
-CREATE TABLE IF NOT EXISTS venel.imageAttachments (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  messageId BIGINT,
-  binaryContent MEDIUMBLOB,
-  FOREIGN KEY (messageId) REFERENCES venel.messages (id)
+create table if not exists venel.users
+(
+    id           bigint auto_increment
+        primary key,
+    username     varchar(255)                          not null,
+    phoneNumber  varchar(255)                          null,
+    passwordHash varchar(64)                           not null,
+    displayname  varchar(255)                          null,
+    description  text                                  null,
+    createdAt    timestamp default current_timestamp() not null,
+    updatedAt    timestamp default current_timestamp() not null on update current_timestamp(),
+    constraint username
+        unique (username)
 );
 
-CREATE TABLE IF NOT EXISTS venel.audioAttachments (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  messageId BIGINT,
-  binaryContent MEDIUMBLOB,
-  FOREIGN KEY (messageId) REFERENCES venel.messages (id)
+create table if not exists venel.channelMembers
+(
+    channelId bigint not null,
+    userId    bigint not null,
+    primary key (channelId, userId),
+    constraint channelMembers_channels_id_fk
+        foreign key (channelId) references venel.channels (id)
+            on delete cascade,
+    constraint channelMembers_users_id_fk
+        foreign key (userId) references venel.users (id)
+            on delete cascade
 );
 
-CREATE TABLE IF NOT EXISTS venel.reactions (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  content VARCHAR(255)
+create table if not exists venel.messages
+(
+    id              bigint auto_increment
+        primary key,
+    channelId       bigint                                not null,
+    parentMessageId bigint                                null,
+    senderId        bigint                                null,
+    text            text                                  null,
+    createdAt       timestamp default current_timestamp() not null,
+    updatedAt       timestamp default current_timestamp() not null on update current_timestamp(),
+    constraint messages_channels_id_fk
+        foreign key (channelId) references venel.channels (id)
+            on delete cascade,
+    constraint messages_ibfk_1
+        foreign key (parentMessageId) references venel.messages (id),
+    constraint messages_ibfk_2
+        foreign key (senderId) references venel.users (id)
 );
 
-CREATE TABLE IF NOT EXISTS venel.messageReactions (
-  messageId BIGINT,
-  reactionId BIGINT,
-  PRIMARY KEY (messageId, reactionId),
-  FOREIGN KEY (messageId) REFERENCES venel.messages (id),
-  FOREIGN KEY (reactionId) REFERENCES venel.reactions (id)
+create table if not exists venel.audioAttachments
+(
+    id            bigint auto_increment
+        primary key,
+    messageId     bigint     null,
+    binaryContent mediumblob null,
+    constraint audioAttachments_ibfk_1
+        foreign key (messageId) references venel.messages (id)
 );
+
+create index if not exists messageId
+    on venel.audioAttachments (messageId);
+
+create table if not exists venel.imageAttachments
+(
+    id            bigint auto_increment
+        primary key,
+    messageId     bigint     null,
+    binaryContent mediumblob null,
+    constraint imageAttachments_ibfk_1
+        foreign key (messageId) references venel.messages (id)
+);
+
+create index if not exists messageId
+    on venel.imageAttachments (messageId);
+
+create table if not exists venel.messageReactions
+(
+    messageId  bigint not null,
+    reactionId bigint not null,
+    primary key (messageId, reactionId),
+    constraint messageReactions_ibfk_1
+        foreign key (messageId) references venel.messages (id),
+    constraint messageReactions_ibfk_2
+        foreign key (reactionId) references venel.reactions (id)
+);
+
+create index if not exists reactionId
+    on venel.messageReactions (reactionId);
+
+create index if not exists parentMessageId
+    on venel.messages (parentMessageId);
+
+create index if not exists senderId
+    on venel.messages (senderId);
+
