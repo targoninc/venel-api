@@ -8,19 +8,6 @@ import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {User} from "../database/models";
 
 export class AuthEndpoints {
-    /**
-     * @swagger
-     * /api/logout:
-     *   post:
-     *     summary: Log out a user
-     *     tags: [User Management]
-     *     description: Log out a user
-     *     responses:
-     *       200:
-     *         description: User logged out successfully
-     *       security:
-     *         - cookieAuth: []
-     */
     static logout(): (arg0: Request, arg1: Response) => void {
         return (req: Request, res: Response) => {
             req.logout(() => {
@@ -38,61 +25,12 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/getUser:
-     *   get:
-     *     summary: Get the user object for the currently authenticated user
-     *     tags: [User Management]
-     *     description: Get the user object
-     *     responses:
-     *       200:
-     *         description: The user object
-     *       401:
-     *         description: Unauthorized
-     *     security:
-     *       - cookieAuth: []
-     */
     static getUser(): (arg0: Request, arg1: Response) => void {
         return (req: Request, res: Response) => {
             res.send({user: req.user});
         };
     }
 
-    /**
-     * @swagger
-     * /api/authorize:
-     *   post:
-     *     summary: Authorize a user
-     *     tags: [User Management]
-     *     description: Authorize a user
-     *     parameters:
-     *       - name: user_info
-     *         in: body
-     *         required: true
-     *         schema:
-     *           type: object
-     *           required:
-     *             - username
-     *             - password
-     *           properties:
-     *             username:
-     *               type: string
-     *               minLength: 3
-     *               maxLength: 255
-     *               default: "myusername"
-     *             password:
-     *               type: string
-     *               format: password
-     *               minLength: 16
-     *               maxLength: 64
-     *               default: "testpassword1234"
-     *     responses:
-     *       200:
-     *         description: User authorized successfully
-     *       401:
-     *         description: Unauthorized
-     */
     static authorizeUser(db: MariaDbDatabase) {
         async function authUser(req: Request, res: Response, next: Function): Promise<void> {
             const cleanUsername = req.body.username.toLowerCase();
@@ -151,35 +89,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     *  /api/register:
-     *  post:
-     *    summary: Register a new user
-     *    tags: [User Management]
-     *    description: Register a user
-     *    parameters:
-     *      - name: user_info
-     *        in: body
-     *        required: true
-     *        schema:
-     *          type: object
-     *          required:
-     *            - username
-     *            - password
-     *          properties:
-     *            username:
-     *              type: string
-     *              minLength: 3
-     *              maxLength: 255
-     *              default: "myusername"
-     *            password:
-     *              type: string
-     *              format: password
-     *              minLength: 16
-     *              maxLength: 64
-     *              default: "testpassword1234"
-     */
     static registerUser(db: MariaDbDatabase): (arg0: Request, arg1: Response, arg2: Function) => Promise<void> {
         return async (req: Request, res: Response, next: Function) => {
             const cleanUsername = req.body.username.toLowerCase();
@@ -220,42 +129,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/updateUser:
-     *   post:
-     *     summary: Update user properties
-     *     tags: [User Management]
-     *     description: Update a user
-     *     parameters:
-     *       - name: user_info
-     *         in: body
-     *         required: true
-     *         schema:
-     *           type: object
-     *           properties:
-     *             username:
-     *               type: string
-     *               minLength: 3
-     *               maxLength: 255
-     *               default: "myusername"
-     *               description: The new username
-     *               required: false
-     *             displayname:
-     *               type: string
-     *               maxLength: 255
-     *               default: "My Username"
-     *               description: The new display name
-     *               required: false
-     *             description:
-     *               type: string
-     *               maxLength: 255
-     *               default: "I am a user"
-     *               description: The new description
-     *               required: false
-     *   security:
-     *     - cookieAuth: []
-     */
     static updateUser(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const user = req.user as User;
@@ -290,26 +163,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/permissions:
-     *   get:
-     *     summary: Get a list of permissions
-     *     tags: [Permission Management]
-     *     description: Get all permissions
-     *     responses:
-     *       200:
-     *         description: All permissions
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               permissions:
-     *                 type: array
-     *                 items:
-     *                   type: object
-     */
     static getAllPermissions(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             res.send({
@@ -318,26 +171,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/roles:
-     *   get:
-     *     summary: Get a list of roles
-     *     tags: [Permission Management]
-     *     description: Get all roles
-     *     responses:
-     *       200:
-     *         description: All roles
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 roles:
-     *                   type: array
-     *                   items:
-     *                     type: object
-     */
     static getAllRoles(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             res.send({
@@ -346,54 +179,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/createRole:
-     *   post:
-     *     summary: Create a new empty role
-     *     tags: [Permission Management]
-     *     description: Creates a new role in the system
-     *     produces:
-     *       - application/json
-     *     parameters:
-     *       - name: body
-     *         description: Role's entity
-     *         in: body
-     *         required: true
-     *         schema:
-     *           type: object
-     *           required:
-     *             - name
-     *           properties:
-     *             name:
-     *               type: string
-     *             description:
-     *               type: string
-     *     responses:
-     *       200:
-     *         description: Role created successfully
-     *         schema:
-     *           type: object
-     *           properties:
-     *             message:
-     *               type: string
-     *       403:
-     *         description: You do not have permission to create a role
-     *         schema:
-     *           type: object
-     *           properties:
-     *             error:
-     *               type: string
-     *       default:
-     *         description: Name is required
-     *         schema:
-     *           type: object
-     *           properties:
-     *             error:
-     *               type: string
-     *     security:
-     *       - cookieAuth: []
-     */
     static createRole(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const user = req.user as User;
@@ -414,34 +199,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/addPermissionToRole:
-     *   post:
-     *     summary: Grants a permission to a role and thus implicitly to all users with that role
-     *     tags: [Permission Management]
-     *     description: Grants a permission to a role
-     *     parameters:
-     *       - name: roleId
-     *         description: The ID of the role that will be granted the permission
-     *         in: body
-     *         required: true
-     *         type: integer
-     *       - name: permissionId
-     *         description: The ID of the permission that will be granted to the role
-     *         in: body
-     *         required: true
-     *         type: integer
-     *     responses:
-     *       200:
-     *         description: Permission added to the role successfully
-     *       403:
-     *         description: You do not have permission to add a permission to a role
-     *       400:
-     *         description: RoleId and permissionId are required
-     *     security:
-     *       - cookieAuth: []
-     */
     static addPermissionToRole(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const user = req.user as User;
@@ -463,35 +220,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/permissions:
-     *   get:
-     *     summary: Get all permissions
-     *     tags: [Permission Management]
-     *     parameters:
-     *       - name: roleId
-     *         in: query
-     *         description: ID of the role to get permissions for
-     *         required: true
-     *         schema:
-     *           type: integer
-     *     description: Get permissions of a role by its ID
-     *     responses:
-     *       200:
-     *         description: A list of permissions for the role
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 permissions:
-     *                   type: array
-     *                   items:
-     *                     $ref: '#/definitions/Permission'
-     *       400:
-     *         description: roleId is required
-     */
     static getRolePermissions(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const {roleId} = req.query as { roleId: string };
@@ -506,34 +234,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/getUserRoles:
-     *   get:
-     *     summary: Get a list of all roles for a given user
-     *     tags: [User Management]
-     *     description: Get all roles for a given user
-     *     parameters:
-     *       - name: userId
-     *         in: query
-     *         required: true
-     *         schema:
-     *           type: string
-     *           default: 1
-     *           description: The id of the user
-     *     responses:
-     *       200:
-     *         description: All roles for the user
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 roles:
-     *                   type: array
-     *                   items:
-     *                     type: object
-     */
     static getUserRoles(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const {userId} = req.query as { userId: string };
@@ -554,60 +254,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/getUserPermissions:
-     *   get:
-     *     summary: Get a list of all permissions for a given user
-     *     tags: [User Management]
-     *     description: Get all permissions for a given user
-     *     parameters:
-     *       - name: userId
-     *         in: query
-     *         required: true
-     *         schema:
-     *           type: string
-     *           default: 1
-     *           description: The id of the user
-     *     responses:
-     *       200:
-     *         description: All permissions for the user
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 permissions:
-     *                   type: array
-     *                   items:
-     *                     type: object
-     *       403:
-     *         description: You do not have permission to get user permissions for another user
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 error:
-     *                   type: string
-     *                   example: You do not have permission to get user permissions for another user
-     *                   required: true
-     *                   description: The error message
-     *       404:
-     *         description: User not found
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 error:
-     *                   type: string
-     *                   example: User not found
-     *                   required: true
-     *                   description: The error message
-     *     security:
-     *       - cookieAuth: []
-     */
     static getUserPermissions(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const {userId} = req.query as { userId: string };
@@ -638,62 +284,6 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @swagger
-     * /api/addRoleToUser:
-     *   post:
-     *     summary: Adds a role to a user
-     *     tags: [User Management]
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               userId:
-     *                 type: number
-     *                 description: The user ID for whom a role should be added
-     *               roleId:
-     *                 type: number
-     *                 description: The role ID to be added to the user
-     *             required:
-     *               - userId
-     *               - roleId
-     *     responses:
-     *       200:
-     *         description: Role added to user successfully
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                   example: Role added to user successfully
-     *       403:
-     *         description: You do not have permission to add a role to a user
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 error:
-     *                   type: string
-     *                   example: You do not have permission to add a role to a user
-     *       400:
-     *         description: userId and roleId are required
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 error:
-     *                   type: string
-     *                   example: userId and roleId are required
-     *     security:
-     *       - cookieAuth: []
-     */
     static addRoleToUser(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const {userId, roleId} = req.body;

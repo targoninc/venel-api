@@ -46,15 +46,6 @@ export class AuthenticationFeature {
         app.get("/api/getUserRoles", AuthActions.checkAuthenticated, AuthEndpoints.getUserRoles(db));
         app.post("/api/addRoleToUser", AuthActions.checkAuthenticated, AuthEndpoints.addRoleToUser(db));
 
-        AuthenticationFeature.addSwagger(__dirname, app);
         return app;
-    }
-
-    static addSwagger(__dirname: string, app: Application) {
-        const endpointsPath = path.join(__dirname, 'features/authentication/endpoints.js');
-        CLI.debug(endpointsPath);
-        swaggerOptions.apis.push(endpointsPath);
-        const swaggerSpecs = swaggerJsDoc(swaggerOptions);
-        app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
     }
 }
