@@ -51,8 +51,15 @@ export class MariaDbDatabase {
     }
 
     /**
+     * @returns {Promise<User|undefined>}
+     */
+    async getUsers() {
+        return await this.query("SELECT * FROM venel.users");
+    }
+
+    /**
      * @param {String} username
-     * @returns {Promise<Users| null>}
+     * @returns {Promise<User | null>}
      **/
     async getUserByUsername(username) {
         const rows = await this.query("SELECT * FROM venel.users WHERE username = ?", [username]);
@@ -75,7 +82,7 @@ export class MariaDbDatabase {
      * @param {String} ip
      * @returns {Promise<void>}
      */
-    async insertUser(username, hashedPassword, ip) {
+    async createUser(username, hashedPassword, ip) {
         await this.query("INSERT INTO venel.users (username, passwordHash, registrationIp) VALUES (?, ?, ?)", [username, hashedPassword, ip]);
     }
 
@@ -113,5 +120,75 @@ export class MariaDbDatabase {
      */
     async updateUserDescription(id, description) {
         await this.query("UPDATE venel.users SET description = ? WHERE id = ?", [description, id]);
+    }
+
+    async createRole(name, description = "") {
+        await this.query("INSERT INTO venel.roles (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = name", [name, description]);
+    }
+
+    async createPermission(name, description) {
+        await this.query("INSERT INTO venel.permissions (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = name", [name, description]);
+    }
+
+    async createRolePermission(roleId, permissionId) {
+        await this.query("INSERT INTO venel.rolePermissions (roleId, permissionId) VALUES (?, ?) ON DUPLICATE KEY UPDATE roleId = roleId", [roleId, permissionId]);
+    }
+
+    async createUserRole(userId, roleId) {
+        await this.query("INSERT INTO venel.userRoles (userId, roleId) VALUES (?, ?)", [userId, roleId]);
+    }
+
+    /**
+     * @param name
+     * @returns {Promise<Role|null>}
+     */
+    async getRoleByName(name) {
+        const rows = await this.query("SELECT * FROM venel.roles WHERE name = ?", [name]);
+        return rows ? rows[0] : null;
+    }
+
+    async deleteUserRole(userId, roleId) {
+        await this.query("DELETE FROM venel.userRoles WHERE userId = ? AND roleId = ?", [userId, roleId]);
+    }
+
+    /**
+     * @returns {Promise<Permission[]|undefined>}
+     */
+    async getPermissions() {
+        return await this.query("SELECT * FROM venel.permissions");
+    }
+
+    /**
+     * @returns {Promise<Role[]|undefined>}
+     */
+    async getRoles() {
+        return await this.query("SELECT * FROM venel.roles");
+    }
+
+    /**
+     * @param userId
+     * @returns {Promise<Role[]|undefined>}
+     */
+    async getUserRoles(userId) {
+        return await this.query("SELECT r.id, r.name, r.description FROM venel.roles r INNER JOIN venel.userRoles ur ON r.id = ur.roleId WHERE ur.userId = ?", [userId]);
+    }
+
+    /**
+     * @param roleId
+     * @returns {Promise<Permission[]|undefined>}
+     */
+    async getRolePermissions(roleId) {
+        return await this.query(`SELECT * FROM venel.permissions INNER JOIN venel.rolePermissions ON 
+permissions.id = rolePermissions.permissionId WHERE rolePermissions.roleId = ?`, [roleId]);
+    }
+
+    /**
+     * @param userId
+     * @returns {Promise<Permission[]|undefined>}
+     */
+    async getUserPermissions(userId) {
+        return await this.query(`SELECT p.id, p.name, p.description FROM venel.permissions p INNER JOIN venel.rolePermissions rp ON 
+p.id = rp.permissionId INNER JOIN venel.userRoles ur ON rp.roleId = ur.roleId 
+WHERE ur.userId = ?`, [userId]);
     }
 }

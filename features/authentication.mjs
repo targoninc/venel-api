@@ -6,6 +6,7 @@ import {swaggerOptions} from "../swagger.mjs";
 import swaggerJsDoc from "swagger-jsdoc";
 import {PassportDeserializeUser, PassportSerializeUser, PassportStrategy} from "./authentication/passport.mjs";
 import {AuthEndpoints} from "./authentication/endpoints.mjs";
+import {AuthActions} from "./authentication/actions.mjs";
 
 export class AuthenticationFeature {
     static enable(__dirname, db) {
@@ -29,7 +30,16 @@ export class AuthenticationFeature {
         app.post("/api/register", AuthEndpoints.registerUser(db));
         app.post("/api/updateUser", AuthEndpoints.updateUser(db));
         app.post("/api/logout", AuthEndpoints.logout());
-        app.get("/api/getUser", AuthEndpoints.getUser());
+        app.get("/api/getUser", AuthActions.checkAuthenticated, AuthEndpoints.getUser());
+        app.post("/api/updateUser", AuthActions.checkAuthenticated, AuthEndpoints.updateUser(db));
+
+        // Permissions and roles
+        app.get("/api/permissions", AuthEndpoints.getAllPermissions(db));
+        app.get("/api/roles", AuthEndpoints.getAllRoles(db));
+        app.post("/api/createRole", AuthActions.checkAuthenticated, AuthEndpoints.createRole(db));
+        app.post("/api/addPermissionToRole", AuthActions.checkAuthenticated, AuthEndpoints.addPermissionToRole(db));
+        app.get("/api/getUserPermissions", AuthActions.checkAuthenticated, AuthEndpoints.getUserPermissions(db));
+        app.get("/api/getUserRoles", AuthActions.checkAuthenticated, AuthEndpoints.getUserRoles(db));
 
         AuthenticationFeature.addSwagger(__dirname, app);
         return app;
