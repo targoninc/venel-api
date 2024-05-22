@@ -5,6 +5,7 @@
   "type": "module",
   "main": "main.ts",
   "scripts": {
+    "dev": "babel-watch --only *.ts --extensions .ts --watch src --before-restart \"npm run build:main\" --inspect -- dist/main.js",
     "start": "node dist/main.js",
     "build:main": "babel -x .ts -d dist src",
     "build:types": "tsc",
@@ -36,6 +37,7 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.6",
     "babel-plugin-add-import-extension": "^1.6.0",
+    "babel-watch": "^7.8.1",
     "mysql2": "^3.9.7",
     "typescript": "^5.4.5"
   }

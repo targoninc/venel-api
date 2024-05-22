@@ -16,6 +16,7 @@ export interface {{interfaceName}} {{#if extends}}extends {{extends}} {{/if}}{
   '{{propertyName}}'{{#if optional}}?{{/if}}: {{propertyType}}{{#if nullable}} | null{{/if}};
   {{/each}}
 }
+
 {{/each}}
 {{#each enums as |enum|}}
 export enum {{convertedName}} {
@@ -49,10 +50,11 @@ export namespace {{config.namespace}} {
     {{> typeDefs }}
     {{#each database.schemas as |schema|}}
     {{> schemaPartial schema }}
+
     {{/each}}
 }
     {{else}}
-        {{> typeDefs }}
+{{> typeDefs }}
         {{#each database.schemas as |schema|}}
 {{> schemaPartial schema}}
         {{/each}}

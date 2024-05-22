@@ -288,21 +288,21 @@ export class AuthEndpoints {
      * @swagger
      *   /api/permissions:
      *     get:
-     *      tags:
+     *       tags:
      *         - Permission Management
      *       description: Get all permissions
      *       responses:
      *         200:
      *           description: All permissions
-     *           content:
-     *             application/json:
-     *               schema:
-     *                 type: object
-     *                 properties:
-     *                   permissions:
-     *                     type: array
-     *                     items:
-     *                       type: object
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 permissions:
+     *                   type: array
+     *                   items:
+     *                     type: object
      */
     static getAllPermissions(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {

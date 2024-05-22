@@ -5,95 +5,96 @@
 export type Id = number;
 
 export interface AudioAttachment {
-    'binaryContent': Buffer | null;
-    'id': Id;
-    'messageId': Id | null;
+  'binaryContent': Buffer | null;
+  'id': Id;
+  'messageId': Id | null;
 }
 
 export interface BridgedUser {
-    'instanceId': Id;
-    'userId': Id;
+  'instanceId': Id;
+  'userId': Id;
 }
 
 export interface BridgeInstance {
-    'id': Id;
-    'url': string;
-    'useAllowlist': boolean;
+  'id': Id;
+  'url': string;
+  'useAllowlist': boolean;
 }
 
 export interface ChannelMember {
-    'channelId': Id;
-    'userId': Id;
+  'channelId': Id;
+  'userId': Id;
 }
 
 export interface Channel {
-    'bridged': boolean;
-    'bridgedChannelId': Id | null;
-    'bridgeInstanceId': Id | null;
-    'id': Id;
-    'name': string | null;
+  'bridged': boolean;
+  'bridgedChannelId': Id | null;
+  'bridgeInstanceId': Id | null;
+  'id': Id;
+  'name': string | null;
 }
 
 export interface ImageAttachment {
-    'binaryContent': Buffer | null;
-    'id': Id;
-    'messageId': Id | null;
+  'binaryContent': Buffer | null;
+  'id': Id;
+  'messageId': Id | null;
 }
 
 export interface MessageReaction {
-    'messageId': Id;
-    'reactionId': Id;
+  'messageId': Id;
+  'reactionId': Id;
 }
 
 export interface Message {
-    'channelId': Id;
-    'createdAt': Date;
-    'id': Id;
-    'parentMessageId': Id | null;
-    'senderId': Id | null;
-    'text': string | null;
-    'updatedAt': Date;
+  'channelId': Id;
+  'createdAt': Date;
+  'id': Id;
+  'parentMessageId': Id | null;
+  'senderId': Id | null;
+  'text': string | null;
+  'updatedAt': Date;
 }
 
 export interface Permission {
-    'description': string;
-    'id': Id;
-    'name': string;
+  'description': string;
+  'id': Id;
+  'name': string;
 }
 
 export interface Reaction {
-    'content': string | null;
-    'id': Id;
+  'content': string | null;
+  'id': Id;
 }
 
 export interface RolePermission {
-    'permissionId': Id;
-    'roleId': number;
+  'permissionId': Id;
+  'roleId': number;
 }
 
 export interface Role {
-    'createdAt': Date;
-    'description': string;
-    'id': number;
-    'name': string;
+  'createdAt': Date;
+  'description': string;
+  'id': number;
+  'name': string;
 }
 
 export interface UserRole {
-    'createdAt': Date;
-    'roleId': number;
-    'userId': Id;
+  'createdAt': Date;
+  'roleId': number;
+  'userId': Id;
 }
 
 export interface User {
-    'archived': boolean;
-    'createdAt': Date;
-    'description': string | null;
-    'displayname': string | null;
-    'id': Id;
-    'lastLoginIp': string | null;
-    'passwordHash': string;
-    'phoneNumber': string | null;
-    'registrationIp': string | null;
-    'updatedAt': Date;
-    'username': string;
+  'archived': boolean;
+  'createdAt': Date;
+  'description': string | null;
+  'displayname': string | null;
+  'id': Id;
+  'lastLoginIp': string | null;
+  'passwordHash': string;
+  'phoneNumber': string | null;
+  'registrationIp': string | null;
+  'updatedAt': Date;
+  'username': string;
 }
+
