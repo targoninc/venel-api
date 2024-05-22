@@ -38,11 +38,13 @@ export class AuthenticationFeature {
 
         // Permissions and roles
         app.get("/api/permissions", AuthEndpoints.getAllPermissions(db));
+        app.get("/api/rolePermissions", AuthEndpoints.getRolePermissions(db));
         app.get("/api/roles", AuthEndpoints.getAllRoles(db));
         app.post("/api/createRole", AuthActions.checkAuthenticated, AuthEndpoints.createRole(db));
         app.post("/api/addPermissionToRole", AuthActions.checkAuthenticated, AuthEndpoints.addPermissionToRole(db));
         app.get("/api/getUserPermissions", AuthActions.checkAuthenticated, AuthEndpoints.getUserPermissions(db));
         app.get("/api/getUserRoles", AuthActions.checkAuthenticated, AuthEndpoints.getUserRoles(db));
+        app.post("/api/addRoleToUser", AuthActions.checkAuthenticated, AuthEndpoints.addRoleToUser(db));
 
         AuthenticationFeature.addSwagger(__dirname, app);
         return app;
