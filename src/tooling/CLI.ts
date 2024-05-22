@@ -1,39 +1,39 @@
 export class CLI {
-    static withColor(text, color, newLine = true) {
+    static withColor(text: string, color: number, newLine: boolean = true) {
         const timestamp = new Date().toISOString();
         text = `[${timestamp}] ${text}`;
         process.stdout.write(`\x1b[${color}m${text}\x1b[0m${newLine ? "\n" : ""}`);
     }
 
-    static error(text, newLine = true) {
+    static error(text: string, newLine = true) {
         CLI.withColor(text, 31, newLine);
     }
 
-    static warning(text, newLine = true) {
+    static warning(text: string, newLine = true) {
         CLI.withColor(text, 33, newLine);
     }
 
-    static info(text, newLine = true) {
+    static info(text: string, newLine = true) {
         CLI.withColor(text, 36, newLine);
     }
 
-    static success(text, newLine = true) {
+    static success(text: string, newLine = true) {
         CLI.withColor(text, 32, newLine);
     }
 
-    static debug(text, newLine = true) {
+    static debug(text: string, newLine = true) {
         CLI.withColor(text, 35, newLine);
     }
 
-    static log(text, newLine = true) {
+    static log(text: string, newLine = true) {
         CLI.info(text, newLine);
     }
 
-    static write(text, newLine = true) {
+    static write(text: string, newLine = true) {
         process.stdout.write(text + (newLine ? "\n" : ""));
     }
 
-    static sameLineDiff(tokens, compareTokens) {
+    static sameLineDiff(tokens: string[], compareTokens: string[]) {
         for (let i = 0; i < tokens.length; i++) {
             if (tokens[i] === compareTokens[i]) {
                 CLI.error(compareTokens[i] + " ", false);
@@ -43,22 +43,21 @@ export class CLI {
         }
     }
 
-    static rewrite(text) {
-        process.stdout.clearLine();
+    static rewrite(text: string) {
+        process.stdout.clearLine(0);
         process.stdout.cursorTo(0);
         process.stdout.write(text);
     }
 
-    static trace(toLog) {
+    static trace(toLog: any) {
         CLI.object(toLog);
-        const stack = new Error().stack
-            .split("\n")
+        const stack = new Error().stack?.split("\n")
             .slice(2)
             .join("\n");
-        CLI.debug(stack);
+        CLI.debug(stack ?? "No stack trace available.");
     }
 
-    static object(obj) {
+    static object(obj: any) {
         CLI.debug(JSON.stringify(obj, null, 4));
     }
 }

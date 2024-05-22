@@ -1,4 +1,9 @@
-export const PermissionsList = {
+export type Permission = {
+    name: string;
+    description: string;
+};
+
+export const PermissionsList: Record<string, Permission> = {
     addUser: {
         name: "addUser",
         description: "Can add a user."

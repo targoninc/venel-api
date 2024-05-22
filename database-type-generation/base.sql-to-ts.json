@@ -14,10 +14,10 @@
     "typeDefs": {
         "Id": "number"
     },
-    "filename": "features/database/models.d",
-    "namespace": "Venel",
+    "filename": "src/features/database/models",
     "tableNameCasing": "pascal",
     "interfaceNameFormat": "${table}",
     "template": "database-type-generation/template.handlebars",
-    "singularTableNames": true
+    "singularTableNames": true,
+    "globalOptionality": "required"
 }

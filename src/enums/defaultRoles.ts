@@ -1,6 +1,12 @@
-import {PermissionsList} from "./permissionsList.mjs";
+import {Permission, PermissionsList} from "./permissionsList";
 
-export const DefaultRoles = {
+export type Role = {
+    name: string;
+    description: string;
+    permissions: Permission[];
+}
+
+export const DefaultRoles: Record<string, Role> = {
     admin: {
         name: "admin",
         description: "Administrator. Can do anything.",

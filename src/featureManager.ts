@@ -1,10 +1,10 @@
-import {AuthenticationFeature} from "./features/authentication.mjs";
-import {DatabaseFeature} from "./features/database.mjs";
-import {CLI} from "./tooling/CLI.mjs";
-import {MessagingFeature} from "./features/messaging.mjs";
+import {AuthenticationFeature} from "./features/authenticationFeature";
+import {DatabaseFeature} from "./features/databaseFeature";
+import {CLI} from "./tooling/CLI";
+import {MessagingFeature} from "./features/messagingFeature";
 
-export class Features {
-    static async enable(__dirname) {
+export class FeatureManager {
+    static async enable(__dirname: string) {
         const db = await DatabaseFeature.enable(__dirname);
         const app = AuthenticationFeature.enable(__dirname, db);
         MessagingFeature.enable(app);
