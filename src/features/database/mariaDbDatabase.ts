@@ -1,33 +1,47 @@
 import mariadb from 'mariadb';
-import {CLI} from "../../tooling/CLI.mjs";
+import {CLI} from "../../tooling/CLI";
+import {Permission, Role, User} from "./models";
 
 export class MariaDbDatabase {
-    constructor(host = null, user = null, password = null, port = null) {
-        this.host = host || process.env.MYSQL_HOST;
+    private readonly host: string;
+    private readonly port: number;
+    private readonly user: string;
+    private readonly password: string;
+    private readonly database: string;
+    private pool: mariadb.Pool | null = null;
+
+    constructor(host: string | null = null, user: string | null = null, password: string | null = null, port: number | null = null) {
+        this.host = host || process.env.MYSQL_HOST || 'localhost';
         this.port = port || 3306;
-        this.user = user || process.env.MYSQL_USER;
-        this.password = password || process.env.MYSQL_PASSWORD;
+        this.user = user || process.env.MYSQL_USER || 'root';
+        this.password = password || process.env.MYSQL_PASSWORD || '';
         this.database = 'venel';
         CLI.info(`Set up MariaDB connection to ${this.host}:${this.port} with user ${this.user} and database venel.`);
     }
 
-    async connect() {
-        this.pool = await mariadb.createPool({
+    connect() {
+        this.pool = mariadb.createPool({
             host: this.host,
             port: this.port,
             user: this.user,
             password: this.password,
             database: this.database
         });
+        if (!this.pool) {
+            throw new Error("Could not connect to database.");
+        }
     }
 
-    async query(sql, params = []) {
+    async query(sql: string, params: unknown[] = []) {
+        if (!this.pool) {
+            this.connect();
+        }
         let conn;
         try {
-            conn = await this.pool.getConnection();
+            conn = await this.pool!.getConnection();
             return await conn.query({
                 sql,
-                supportBigNumbers: true
+                bigIntAsNumber: true
             }, params);
         } catch (e) {
             throw e;
@@ -38,113 +52,84 @@ export class MariaDbDatabase {
         }
     }
 
-    /**
-     * @returns {Promise<User|undefined>}
-     */
-    async getUsers() {
+    async getUsers(): Promise<User[] | undefined> {
         return await this.query("SELECT * FROM venel.users");
     }
 
-    async getUserByUsername(username) {
+    async getUserByUsername(username: string): Promise<User | null> {
         const rows = await this.query("SELECT * FROM venel.users WHERE username = ?", [username]);
+
         return rows ? rows[0] : null;
     }
 
-    /**
-     *
-     * @param id
-     * @returns {Promise<User|null>}
-     */
-    async getUserById(id) {
+    async getUserById(id: number): Promise<User | null> {
         const rows = await this.query("SELECT * FROM venel.users WHERE id = ?", [id]);
         return rows ? rows[0] : null;
     }
 
-    async createUser(username, hashedPassword, ip) {
+    async createUser(username: string, hashedPassword: string, ip: string): Promise<void> {
         await this.query("INSERT INTO venel.users (username, passwordHash, registrationIp) VALUES (?, ?, ?)", [username, hashedPassword, ip]);
     }
 
-    async updateUserIp(id, ip) {
+    async updateUserIp(id: number, ip: string): Promise<void> {
         await this.query("UPDATE venel.users SET lastLoginIp = ? WHERE id = ?", [ip, id]);
     }
 
-    async updateUserUsername(id, username) {
+    async updateUserUsername(id: number, username: string): Promise<void> {
         await this.query("UPDATE venel.users SET username = ? WHERE id = ?", [username, id]);
     }
 
-    async updateUserDisplayname(id, displayname) {
+    async updateUserDisplayname(id: number, displayname: string): Promise<void> {
         await this.query("UPDATE venel.users SET displayname = ? WHERE id = ?", [displayname, id]);
     }
 
-    async updateUserDescription(id, description) {
+    async updateUserDescription(id: number, description: string): Promise<void> {
         await this.query("UPDATE venel.users SET description = ? WHERE id = ?", [description, id]);
     }
 
-    async createRole(name, description = "") {
+    async createRole(name: string, description = "") {
         await this.query("INSERT INTO venel.roles (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = name", [name, description]);
     }
 
-    async createPermission(name, description) {
+    async createPermission(name: string, description: string) {
         await this.query("INSERT INTO venel.permissions (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = name", [name, description]);
     }
 
-    async createRolePermission(roleId, permissionId) {
+    async createRolePermission(roleId: number, permissionId: number) {
         await this.query("INSERT INTO venel.rolePermissions (roleId, permissionId) VALUES (?, ?) ON DUPLICATE KEY UPDATE roleId = roleId", [roleId, permissionId]);
     }
 
-    async createUserRole(userId, roleId) {
+    async createUserRole(userId: number, roleId: number) {
         await this.query("INSERT INTO venel.userRoles (userId, roleId) VALUES (?, ?)", [userId, roleId]);
     }
 
-    /**
-     * @param name
-     * @returns {Promise<Role|null>}
-     */
-    async getRoleByName(name) {
+    async getRoleByName(name: string): Promise<Role | null> {
         const rows = await this.query("SELECT * FROM venel.roles WHERE name = ?", [name]);
         return rows ? rows[0] : null;
     }
 
-    async deleteUserRole(userId, roleId) {
+    async deleteUserRole(userId: number, roleId: number) {
         await this.query("DELETE FROM venel.userRoles WHERE userId = ? AND roleId = ?", [userId, roleId]);
     }
 
-    /**
-     * @returns {Promise<Permission[]|undefined>}
-     */
-    async getPermissions() {
+    async getPermissions(): Promise<Permission[] | undefined> {
         return await this.query("SELECT * FROM venel.permissions");
     }
 
-    /**
-     * @returns {Promise<Role[]|undefined>}
-     */
-    async getRoles() {
+    async getRoles(): Promise<Role[] | undefined> {
         return await this.query("SELECT * FROM venel.roles");
     }
 
-    /**
-     * @param userId
-     * @returns {Promise<Role[]|undefined>}
-     */
-    async getUserRoles(userId) {
+    async getUserRoles(userId: number): Promise<Role[] | undefined> {
         return await this.query("SELECT r.id, r.name, r.description FROM venel.roles r INNER JOIN venel.userRoles ur ON r.id = ur.roleId WHERE ur.userId = ?", [userId]);
     }
 
-    /**
-     * @param roleId
-     * @returns {Promise<Permission[]|undefined>}
-     */
-    async getRolePermissions(roleId) {
+    async getRolePermissions(roleId: number): Promise<Permission[] | undefined> {
         return await this.query(`SELECT * FROM venel.permissions INNER JOIN venel.rolePermissions ON 
 permissions.id = rolePermissions.permissionId WHERE rolePermissions.roleId = ?`, [roleId]);
     }
 
-    /**
-     * @param userId
-     * @returns {Promise<Permission[]|undefined>}
-     */
-    async getUserPermissions(userId) {
+    async getUserPermissions(userId: number): Promise<Permission[] | undefined> {
         return await this.query(`SELECT p.id, p.name, p.description FROM venel.permissions p INNER JOIN venel.rolePermissions rp ON 
 p.id = rp.permissionId INNER JOIN venel.userRoles ur ON rp.roleId = ur.roleId 
 WHERE ur.userId = ?`, [userId]);

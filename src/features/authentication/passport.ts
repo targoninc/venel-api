@@ -1,11 +1,13 @@
 import passportLocal from "passport-local";
 import bcrypt from "bcryptjs";
-import {safeUser} from "./actions.mjs";
+import {safeUser} from "./actions";
+import {MariaDbDatabase} from "../database/mariaDbDatabase";
 
 const LocalStrategy = passportLocal.Strategy;
 
-export function PassportStrategy(db) {
+export function PassportStrategy(db: MariaDbDatabase) {
     return new LocalStrategy(
+        {},
         async (username, password, done) => {
             const user = await db.getUserByUsername(username);
             if (!user) {
@@ -20,15 +22,18 @@ export function PassportStrategy(db) {
 }
 
 export function PassportSerializeUser() {
-    return (user, done) => {
+    return (user: Express.User & { id?: number }, done: Function) => {
         done(null, user.id);
     }
 }
 
-export function PassportDeserializeUser(db) {
-    return async (id, done) => {
+export function PassportDeserializeUser(db: MariaDbDatabase) {
+    return async (id: number, done: Function) => {
         const user = await db.getUserById(id);
-        delete user.passwordHash;
+        if (!user) {
+            return done(null, null);
+        }
+        user.passwordHash = "";
         done(null, safeUser(user));
     }
 }

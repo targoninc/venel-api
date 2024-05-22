@@ -1,12 +1,14 @@
 import passport from "passport";
-import {CLI} from "../../tooling/CLI.mjs";
-import {AuthActions, safeUser} from "./actions.mjs";
-import {IP} from "../../tooling/IP.mjs";
-import {PermissionsList} from "../../enums/permissionsList.mjs";
+import {CLI} from "../../tooling/CLI";
+import {AuthActions, safeUser} from "./actions";
+import {IP} from "../../tooling/IP";
+import {PermissionsList} from "../../enums/permissionsList";
+import {Request, Response} from "express";
+import {MariaDbDatabase} from "../database/mariaDbDatabase";
+import {User} from "../database/models";
 
 export class AuthEndpoints {
     /**
-     * @returns {function(Request, Response): void}
      * @swagger
      * /api/logout:
      *  post:
@@ -15,8 +17,8 @@ export class AuthEndpoints {
      *      200:
      *        description: User logged out successfully
      */
-    static logout() {
-        return (req, res) => {
+    static logout(): (arg0: Request, arg1: Response) => void {
+        return (req: Request, res: Response) => {
             req.logout(() => {
                 const isHttps = req.headers['x-forwarded-proto'] === 'https';
 
@@ -43,14 +45,13 @@ export class AuthEndpoints {
      *      401:
      *        description: Unauthorized
      */
-    static getUser() {
-        return (req, res) => {
+    static getUser(): (arg0: Request, arg1: Response) => void {
+        return (req: Request, res: Response) => {
             res.send({user: req.user});
         };
     }
 
     /**
-     * @returns {function(Request, Response, Function): Promise}
      * @swagger
      * /api/authorize:
      *  post:
@@ -82,24 +83,27 @@ export class AuthEndpoints {
      *      401:
      *        description: Unauthorized
      */
-    static authorizeUser(db) {
-        return async (req, res, next) => {
+    static authorizeUser(db: MariaDbDatabase) {
+        async function authUser(req: Request, res: Response, next: Function): Promise<void> {
             const cleanUsername = req.body.username.toLowerCase();
             if (cleanUsername.length < 3) {
                 res.send({error: "Username must be at least 3 characters long"});
+
                 return;
             }
             const existing = await db.getUserByUsername(cleanUsername);
             if (!existing) {
                 res.send({error: "This username does not exist on this instance"});
+
                 return;
             }
-            if (existing && !existing.ip) {
+
+            if (!existing.lastLoginIp) {
                 const ip = IP.get(req);
                 await db.updateUserIp(existing.id, ip);
             }
 
-            passport.authenticate("local", async (err, user) => {
+            passport.authenticate("local", async (err: any, user: User) => {
                 if (err) {
                     CLI.error(err);
                     return next(err);
@@ -111,15 +115,19 @@ export class AuthEndpoints {
                 req.logIn(user, AuthEndpoints.requestLogin(next, db, req, res, existing, user));
             })(req, res, next);
         }
+
+        return authUser;
     }
 
-    static requestLogin(next, db, req, res, existing, user) {
-        return async (err) => {
+    static requestLogin(next: Function, db: MariaDbDatabase, req: Request, res: Response, existing: User | false, user: User) {
+        return async (err: any) => {
             if (err) {
                 return next(err);
             }
 
-            const outUser = {
+            const outUser = <User & {
+                justRegistered?: boolean;
+            }>{
                 id: user.id,
                 username: user.username,
             };
@@ -134,7 +142,6 @@ export class AuthEndpoints {
     }
 
     /**
-     * @returns {function(Request, Response, Function): Promise}
      * @swagger
      *  /api/register:
      *  post:
@@ -161,8 +168,8 @@ export class AuthEndpoints {
      *              maxLength: 64
      *              default: "testpassword1234"
      */
-    static registerUser(db) {
-        return async (req, res, next) => {
+    static registerUser(db: MariaDbDatabase): (arg0: Request, arg1: Response, arg2: Function) => Promise<void> {
+        return async (req: Request, res: Response, next: Function) => {
             const cleanUsername = req.body.username.toLowerCase();
             if (cleanUsername.length < 3) {
                 res.send({error: "Username must be at least 3 characters long"});
@@ -191,7 +198,7 @@ export class AuthEndpoints {
             }
             await AuthActions.registerUser(req, db, cleanUsername, req.body.password);
 
-            passport.authenticate("local", async (err, user) => {
+            passport.authenticate("local", async (err: any, user: User) => {
                 if (err) {
                     CLI.error(err);
                     return next(err);
@@ -202,8 +209,6 @@ export class AuthEndpoints {
     }
 
     /**
-     * @param {MariaDbDatabase} db
-     * @returns {(function(*, *): Promise<void>)|*}
      * @swagger
      *   /api/updateUser:
      *     post:
@@ -235,9 +240,9 @@ export class AuthEndpoints {
      *                 description: The new description
      *                 required: false
      */
-    static updateUser(db) {
-        return async (req, res) => {
-            const user = req.user;
+    static updateUser(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
             const {username, displayname, description} = req.body;
             if (username) {
                 if (username.length < 3) {
@@ -259,6 +264,10 @@ export class AuthEndpoints {
             }
 
             const outUser = await db.getUserById(user.id);
+            if (!outUser) {
+                res.send({error: "User not found"});
+                return;
+            }
             res.send({
                 user: safeUser(outUser)
             });
@@ -266,8 +275,6 @@ export class AuthEndpoints {
     }
 
     /**
-     * @param {MariaDbDatabase} db
-     * @returns {(function(*, *): Promise<void>)|*}
      * @swagger
      *   /api/permissions:
      *     get:
@@ -285,8 +292,8 @@ export class AuthEndpoints {
      *                     items:
      *                       type: object
      */
-    static getAllPermissions(db) {
-        return async (req, res) => {
+    static getAllPermissions(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
             res.send({
                 permissions: await db.getPermissions()
             });
@@ -294,8 +301,6 @@ export class AuthEndpoints {
     }
 
     /**
-     * @param {MariaDbDatabase} db
-     * @returns {(function(*, *): Promise<void>)|*}
      * @swagger
      *   /api/roles:
      *     get:
@@ -313,23 +318,19 @@ export class AuthEndpoints {
      *                     items:
      *                       type: object
      */
-    static getAllRoles(db) {
-        return async (req, res) => {
+    static getAllRoles(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
             res.send({
                 roles: await db.getRoles()
             });
         }
     }
 
-    /**
-     * @param {MariaDbDatabase} db
-     * @returns {(function(*, *): Promise<void>)|*}
-     */
-    static createRole(db) {
-        return async (req, res) => {
-            const user = req.user;
+    static createRole(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
             const userPermissions = await db.getUserPermissions(user.id);
-            if (!userPermissions.some(p => p.name === PermissionsList.createRole.name)) {
+            if (!userPermissions || !userPermissions.some(p => p.name === PermissionsList.createRole.name)) {
                 res.status(403);
                 res.send({error: "You do not have permission to create a role"});
                 return;
@@ -345,15 +346,11 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @param {MariaDbDatabase} db
-     * @returns {(function(*, *): Promise<void>)|*}
-     */
-    static addPermissionToRole(db) {
-        return async (req, res) => {
-            const user = req.user;
+    static addPermissionToRole(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
             const userPermissions = await db.getUserPermissions(user.id);
-            if (!userPermissions.some(p => p.name === PermissionsList.addPermissionToRole)) {
+            if (!userPermissions || !userPermissions.some(p => p.name === PermissionsList.addPermissionToRole.name)) {
                 res.status(403);
                 res.send({error: "You do not have permission to add a permission to a role"});
                 return;
@@ -370,27 +367,21 @@ export class AuthEndpoints {
         }
     }
 
-    /**
-     * @param {MariaDbDatabase} db
-     * @returns {(function(*, *): Promise<void>)|*}
-     */
-    static getRolePermissions(db) {
-        return async (req, res) => {
-            const {roleId} = req.params;
+    static getRolePermissions(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const {roleId} = req.query as { roleId: string };
             if (!roleId) {
                 res.send({error: "roleId is required"});
                 return;
             }
 
             res.send({
-                permissions: await db.getRolePermissions(roleId)
+                permissions: await db.getRolePermissions(parseInt(roleId))
             });
         }
     }
 
     /**
-     * @param {MariaDbDatabase} db
-     * @returns {(function(*, *): Promise<void>)|*}
      * @swagger
      *   /api/getUserRoles:
      *     get:
@@ -416,29 +407,27 @@ export class AuthEndpoints {
      *                     items:
      *                       type: object
      */
-    static getUserRoles(db) {
-        return async (req, res) => {
-            const {userId} = req.query;
+    static getUserRoles(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const {userId} = req.query as { userId: string };
             if (!userId) {
                 res.send({error: "userId is required"});
                 return;
             }
 
-            const user = await db.getUserById(userId);
+            const user = await db.getUserById(parseInt(userId));
             if (!user) {
                 res.send({error: "User not found"});
                 return;
             }
 
             res.send({
-                roles: await db.getUserRoles(userId)
+                roles: await db.getUserRoles(parseInt(userId))
             });
         }
     }
 
     /**
-     * @param {MariaDbDatabase} db
-     * @returns {(function(*, *): Promise<void>)|*}
      * @swagger
      *   /api/getUserPermissions:
      *     get:
@@ -464,29 +453,30 @@ export class AuthEndpoints {
      *                     items:
      *                       type: object
      */
-    static getUserPermissions(db) {
-        return async (req, res) => {
-            const {userId} = req.query;
+    static getUserPermissions(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const {userId} = req.query as { userId: string };
             if (!userId) {
                 res.send({error: "userId is required"});
                 return;
             }
 
-            const user = await db.getUserById(userId);
+            const user = await db.getUserById(parseInt(userId));
             if (!user) {
                 res.send({error: "User not found"});
                 return;
             }
 
-            const selfPermissions = await db.getUserPermissions(req.user.id);
-            if (!selfPermissions.some(p => p.name === PermissionsList.getUserPermissions.name)) {
+            const reqUser = req.user as User;
+            const selfPermissions = await db.getUserPermissions(reqUser.id);
+            if (!selfPermissions || !selfPermissions.some(p => p.name === PermissionsList.getUserPermissions.name)) {
                 res.status(403);
                 res.send({error: "You do not have permission to get user permissions for another user"});
                 return;
             }
 
             res.send({
-                permissions: await db.getUserPermissions(userId)
+                permissions: await db.getUserPermissions(parseInt(userId))
             });
         }
     }

@@ -1,24 +1,27 @@
-import express from "express";
+import express, {Application} from "express";
 import session from "express-session";
-import passport from "passport";
+import passport, {SessionOptions} from "passport";
 import swaggerUI from 'swagger-ui-express';
-import {swaggerOptions} from "../swagger.mjs";
+import {swaggerOptions} from "../swagger.js";
 import swaggerJsDoc from "swagger-jsdoc";
-import {PassportDeserializeUser, PassportSerializeUser, PassportStrategy} from "./authentication/passport.mjs";
-import {AuthEndpoints} from "./authentication/endpoints.mjs";
-import {AuthActions} from "./authentication/actions.mjs";
+import {PassportDeserializeUser, PassportSerializeUser, PassportStrategy} from "./authentication/passport.js";
+import {AuthEndpoints} from "./authentication/endpoints";
+import {AuthActions} from "./authentication/actions";
+import {MariaDbDatabase} from "./database/mariaDbDatabase.js";
+import path from "path";
+import {CLI} from "../tooling/CLI";
 
 export class AuthenticationFeature {
-    static enable(__dirname, db) {
+    static enable(__dirname: string, db: MariaDbDatabase) {
         const app = express();
         app.use(session({
-            secret: process.env.SESSION_SECRET,
+            secret: process.env.SESSION_SECRET || "secret",
             resave: false,
             saveUninitialized: false
         }));
 
         app.use(passport.initialize());
-        app.use(passport.session({}));
+        app.use(passport.session(<SessionOptions>{}));
 
         app.use(express.json());
 
@@ -45,8 +48,10 @@ export class AuthenticationFeature {
         return app;
     }
 
-    static addSwagger(__dirname, app) {
-        swaggerOptions.apis.push(__dirname + '/features/authentication/endpoints.mjs');
+    static addSwagger(__dirname: string, app: Application) {
+        const endpointsPath = path.join(__dirname, 'features/authentication/endpoints.js');
+        CLI.debug(endpointsPath);
+        swaggerOptions.apis.push(endpointsPath);
         const swaggerSpecs = swaggerJsDoc(swaggerOptions);
         app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
     }

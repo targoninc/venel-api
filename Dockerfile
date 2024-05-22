@@ -10,6 +10,9 @@ COPY . .
 # Install the project dependencies
 RUN npm install
 
+# Build the app
+RUN npm run build:main
+
 # Make the app's ports available to the outside world
 EXPOSE 3000
 

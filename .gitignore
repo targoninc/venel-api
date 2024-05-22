@@ -1,2 +1,7 @@
 /node_modules
 *.env
+*.js
+
+.idea/
+
+database-type-generation/sql-to-ts.json

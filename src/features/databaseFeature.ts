@@ -1,24 +1,20 @@
-import {MariaDbDatabase} from "./database/mariaDbDatabase.mjs";
 import fs from "fs";
 import path from "path";
-import {CLI} from "../tooling/CLI.mjs";
-import {PermissionsList} from "../enums/permissionsList.mjs";
-import {DefaultRoles} from "../enums/defaultRoles.mjs";
+import {CLI} from "../tooling/CLI";
+import {PermissionsList} from "../enums/permissionsList";
+import {DefaultRoles} from "../enums/defaultRoles";
+import {MariaDbDatabase} from "./database/mariaDbDatabase";
 
 export class DatabaseFeature {
-    static async enable(__dirname) {
+    static async enable(__dirname: string) {
         const db = new MariaDbDatabase();
-        await db.connect();
+        db.connect();
         await DatabaseFeature.checkDatabaseIntegrity(db, __dirname);
         return db;
     }
 
-    /**
-     * @param {MariaDbDatabase} db
-     * @param {String} __dirname
-     */
-    static async checkDatabaseIntegrity(db, __dirname) {
-        const file = fs.readFileSync(path.join(__dirname, "features/database/updateDb.sql"), "utf8");
+    static async checkDatabaseIntegrity(db: MariaDbDatabase, __dirname: string) {
+        const file = fs.readFileSync(path.join(__dirname, "../updateDb.sql"), "utf8");
         const queries = file.split(";");
         CLI.info("Checking database integrity...");
         for (const query of queries) {
@@ -31,28 +27,20 @@ export class DatabaseFeature {
         CLI.success("Database is up to date.");
     }
 
-    static async createDefaultData(db) {
+    static async createDefaultData(db: MariaDbDatabase) {
         CLI.info("Creating default data...");
         await DatabaseFeature.createDefaultPermissions(db);
         await DatabaseFeature.createDefaultRoles(db);
     }
 
-    /**
-     * @param {MariaDbDatabase} db
-     * @returns {Promise<void>}
-     */
-    static async createDefaultPermissions(db) {
+    static async createDefaultPermissions(db: MariaDbDatabase) {
         const permissions = Object.values(PermissionsList);
         for (const permission of permissions) {
             await db.createPermission(permission.name, permission.description);
         }
     }
 
-    /**
-     * @param {MariaDbDatabase} db
-     * @returns {Promise<void>}
-     */
-    static async createDefaultRoles(db) {
+    static async createDefaultRoles(db: MariaDbDatabase) {
         const roles = Object.values(DefaultRoles);
         for (const role of roles) {
             await db.createRole(role.name, role.description);
