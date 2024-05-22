@@ -12,6 +12,8 @@ export class AuthEndpoints {
      * @swagger
      * /api/logout:
      *  post:
+     *    tags:
+     *      - User Management
      *    description: Log out a user
      *    responses:
      *      200:
@@ -38,6 +40,8 @@ export class AuthEndpoints {
      * @swagger
      * /api/getUser:
      *  get:
+     *    tags:
+     *      - User Management
      *    description: Get the user object
      *    responses:
      *      200:
@@ -55,6 +59,8 @@ export class AuthEndpoints {
      * @swagger
      * /api/authorize:
      *  post:
+     *    tags:
+     *      - User Management
      *    description: Authorize a user
      *    parameters:
      *      - name: user_info
@@ -145,6 +151,8 @@ export class AuthEndpoints {
      * @swagger
      *  /api/register:
      *  post:
+     *    tags:
+     *      - User Management
      *    description: Register a user
      *    parameters:
      *      - name: user_info
@@ -212,6 +220,8 @@ export class AuthEndpoints {
      * @swagger
      *   /api/updateUser:
      *     post:
+     *       tags:
+     *         - User Management
      *       description: Update a user
      *       parameters:
      *         - name: user_info
@@ -278,6 +288,8 @@ export class AuthEndpoints {
      * @swagger
      *   /api/permissions:
      *     get:
+     *      tags:
+     *         - Permission Management
      *       description: Get all permissions
      *       responses:
      *         200:
@@ -304,6 +316,8 @@ export class AuthEndpoints {
      * @swagger
      *   /api/roles:
      *     get:
+     *       tags:
+     *         - Permission Management
      *       description: Get all roles
      *       responses:
      *         200:
@@ -326,6 +340,52 @@ export class AuthEndpoints {
         }
     }
 
+    /**
+     * @swagger
+     * /api/createRole:
+     *   post:
+     *     tags:
+     *       - Permission Management
+     *     description: Creates a new role in the system
+     *     produces:
+     *       - application/json
+     *     parameters:
+     *       - name: body
+     *         description: Role's entity
+     *         in: body
+     *         required: true
+     *         schema:
+     *           type: object
+     *           required:
+     *             - name
+     *           properties:
+     *             name:
+     *               type: string
+     *             description:
+     *               type: string
+     *     responses:
+     *       200:
+     *         description: Role created successfully
+     *         schema:
+     *           type: object
+     *           properties:
+     *             message:
+     *               type: string
+     *       403:
+     *         description: You do not have permission to create a role
+     *         schema:
+     *           type: object
+     *           properties:
+     *             error:
+     *               type: string
+     *       default:
+     *         description: Name is required
+     *         schema:
+     *           type: object
+     *           properties:
+     *             error:
+     *               type: string
+     */
     static createRole(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const user = req.user as User;
@@ -346,6 +406,34 @@ export class AuthEndpoints {
         }
     }
 
+    /**
+     * @swagger
+     * /api/addPermissionToRole:
+     *   post:
+     *     tags:
+     *       - Permission Management
+     *     description: Grants a permission to a role
+     *     parameters:
+     *       - name: roleId
+     *         description: The ID of the role that will be granted the permission
+     *         in: body
+     *         required: true
+     *         type: integer
+     *       - name: permissionId
+     *         description: The ID of the permission that will be granted to the role
+     *         in: body
+     *         required: true
+     *         type: integer
+     *     responses:
+     *       200:
+     *         description: Permission added to the role successfully
+     *       403:
+     *         description: You do not have permission to add a permission to a role
+     *       400:
+     *         description: RoleId and permissionId are required
+     *     security:
+     *       - ApiKeyAuth: []
+     */
     static addPermissionToRole(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const user = req.user as User;
@@ -383,29 +471,31 @@ export class AuthEndpoints {
 
     /**
      * @swagger
-     *   /api/getUserRoles:
-     *     get:
-     *       description: Get all roles for a given user
-     *       parameters:
-     *         - name: userId
-     *           in: query
-     *           required: true
-     *           schema:
-     *             type: string
-     *             default: 1
-     *             description: The id of the user
-     *       responses:
-     *         200:
-     *           description: All roles for the user
-     *           content:
-     *             application/json:
-     *               schema:
-     *                 type: object
-     *                 properties:
-     *                   roles:
-     *                     type: array
-     *                     items:
-     *                       type: object
+     * /api/getUserRoles:
+     *   get:
+     *     tags:
+     *       - User Management
+     *     description: Get all roles for a given user
+     *     parameters:
+     *       - name: userId
+     *         in: query
+     *         required: true
+     *         schema:
+     *           type: string
+     *           default: 1
+     *           description: The id of the user
+     *     responses:
+     *       200:
+     *         description: All roles for the user
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 roles:
+     *                   type: array
+     *                   items:
+     *                     type: object
      */
     static getUserRoles(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
@@ -429,29 +519,31 @@ export class AuthEndpoints {
 
     /**
      * @swagger
-     *   /api/getUserPermissions:
-     *     get:
-     *       description: Get all permissions for a given user
-     *       parameters:
-     *         - name: userId
-     *           in: query
-     *           required: true
-     *           schema:
-     *             type: string
-     *             default: 1
-     *             description: The id of the user
-     *       responses:
-     *         200:
-     *           description: All permissions for the user
-     *           content:
-     *             application/json:
-     *               schema:
-     *                 type: object
-     *                 properties:
-     *                   permissions:
-     *                     type: array
-     *                     items:
-     *                       type: object
+     * /api/getUserPermissions:
+     *   get:
+     *     tags:
+     *       - User Management
+     *     description: Get all permissions for a given user
+     *     parameters:
+     *       - name: userId
+     *         in: query
+     *         required: true
+     *         schema:
+     *           type: string
+     *           default: 1
+     *           description: The id of the user
+     *     responses:
+     *       200:
+     *         description: All permissions for the user
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 permissions:
+     *                   type: array
+     *                   items:
+     *                     type: object
      */
     static getUserPermissions(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
