@@ -5,7 +5,8 @@
   "type": "module",
   "main": "main.mjs",
   "scripts": {
-    "start": "node main.mjs"
+    "start": "node main.mjs",
+    "models-from-database": "npx @rmp135/sql-ts -c database-type-generation/sql-to-ts.json"
   },
   "author": "",
   "license": "ISC",
@@ -19,5 +20,9 @@
     "passport-local": "^1.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "@rmp135/sql-ts": "^2.1.0",
+    "mysql2": "^3.9.7"
   }
 }

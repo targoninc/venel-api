@@ -1,0 +1,23 @@
+{
+    "client": "mysql2",
+    "connection": {
+        "host": "localhost",
+        "user": "root",
+        "password": "<Password>",
+        "database" : "venel"
+    },
+    "typeMap": {
+        "Id": ["bigint"],
+        "Buffer": ["mediumblob"],
+        "boolean": ["tinyint"]
+    },
+    "typeDefs": {
+        "Id": "number"
+    },
+    "filename": "features/database/models.d",
+    "namespace": "Venel",
+    "tableNameCasing": "pascal",
+    "interfaceNameFormat": "${table}",
+    "template": "database-type-generation/template.handlebars",
+    "singularTableNames": true
+}
