@@ -4,7 +4,7 @@ import {DefaultRoles} from "../../enums/defaultRoles";
 import {CLI} from "../../tooling/CLI";
 import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {Request, Response} from "express";
-import {User} from "../database/models";
+import {Id, User} from "../database/models";
 
 export class AuthActions {
     static async registerUser(req: Request, db: MariaDbDatabase, cleanUsername: string, password: string) {
@@ -43,8 +43,18 @@ export class AuthActions {
     }
 }
 
-export function safeUser(user: User): User {
-    return <User>{
+export interface SafeUser {
+    'id': Id;
+    'username': string;
+    'displayname': string | null;
+    'createdAt': Date;
+    'updatedAt': Date;
+    'description': string | null;
+    'archived': boolean;
+}
+
+export function safeUser(user: User): SafeUser {
+    return {
         id: user.id,
         username: user.username,
         displayname: user.displayname,
