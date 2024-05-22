@@ -100,7 +100,7 @@ export class MariaDbDatabase {
     }
 
     async createUserRole(userId: number, roleId: number) {
-        await this.query("INSERT INTO venel.userRoles (userId, roleId) VALUES (?, ?)", [userId, roleId]);
+        await this.query("INSERT INTO venel.userRoles (userId, roleId) VALUES (?, ?) ON DUPLICATE KEY UPDATE userId = userId", [userId, roleId]);
     }
 
     async getRoleByName(name: string): Promise<Role | null> {
