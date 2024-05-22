@@ -1,15 +1,10 @@
-import express, {Application} from "express";
+import express from "express";
 import session from "express-session";
 import passport, {SessionOptions} from "passport";
-import swaggerUI from 'swagger-ui-express';
-import {swaggerOptions} from "../swagger.js";
-import swaggerJsDoc from "swagger-jsdoc";
 import {PassportDeserializeUser, PassportSerializeUser, PassportStrategy} from "./authentication/passport.js";
 import {AuthEndpoints} from "./authentication/endpoints";
 import {AuthActions} from "./authentication/actions";
 import {MariaDbDatabase} from "./database/mariaDbDatabase.js";
-import path from "path";
-import {CLI} from "../tooling/CLI";
 
 export class AuthenticationFeature {
     static enable(__dirname: string, db: MariaDbDatabase) {
