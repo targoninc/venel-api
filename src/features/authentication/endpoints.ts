@@ -11,15 +11,15 @@ export class AuthEndpoints {
     /**
      * @swagger
      * /api/logout:
-     *  post:
-     *    summary: Log out a user
-     *    tags: [User Management]
-     *    description: Log out a user
-     *    responses:
-     *      200:
-     *        description: User logged out successfully
-     *     security:
-     *       - cookieAuth: []
+     *   post:
+     *     summary: Log out a user
+     *     tags: [User Management]
+     *     description: Log out a user
+     *     responses:
+     *       200:
+     *         description: User logged out successfully
+     *       security:
+     *         - cookieAuth: []
      */
     static logout(): (arg0: Request, arg1: Response) => void {
         return (req: Request, res: Response) => {
@@ -62,36 +62,36 @@ export class AuthEndpoints {
     /**
      * @swagger
      * /api/authorize:
-     *  post:
-     *    summary: Authorize a user
-     *    tags: [User Management]
-     *    description: Authorize a user
-     *    parameters:
-     *      - name: user_info
-     *        in: body
-     *        required: true
-     *        schema:
-     *          type: object
-     *          required:
-     *            - username
-     *            - password
-     *          properties:
-     *            username:
-     *              type: string
-     *              minLength: 3
-     *              maxLength: 255
-     *              default: "myusername"
-     *            password:
-     *              type: string
-     *              format: password
-     *              minLength: 16
-     *              maxLength: 64
-     *              default: "testpassword1234"
-     *    responses:
-     *      200:
-     *        description: User authorized successfully
-     *      401:
-     *        description: Unauthorized
+     *   post:
+     *     summary: Authorize a user
+     *     tags: [User Management]
+     *     description: Authorize a user
+     *     parameters:
+     *       - name: user_info
+     *         in: body
+     *         required: true
+     *         schema:
+     *           type: object
+     *           required:
+     *             - username
+     *             - password
+     *           properties:
+     *             username:
+     *               type: string
+     *               minLength: 3
+     *               maxLength: 255
+     *               default: "myusername"
+     *             password:
+     *               type: string
+     *               format: password
+     *               minLength: 16
+     *               maxLength: 64
+     *               default: "testpassword1234"
+     *     responses:
+     *       200:
+     *         description: User authorized successfully
+     *       401:
+     *         description: Unauthorized
      */
     static authorizeUser(db: MariaDbDatabase) {
         async function authUser(req: Request, res: Response, next: Function): Promise<void> {
@@ -222,39 +222,39 @@ export class AuthEndpoints {
 
     /**
      * @swagger
-     *   /api/updateUser:
-     *     post:
-     *       summary: Update user properties
-     *       tags: [User Management]
-     *       description: Update a user
-     *       parameters:
-     *         - name: user_info
-     *           in: body
-     *           required: true
-     *           schema:
-     *             type: object
-     *             properties:
-     *               username:
-     *                 type: string
-     *                 minLength: 3
-     *                 maxLength: 255
-     *                 default: "myusername"
-     *                 description: The new username
-     *                 required: false
-     *               displayname:
-     *                 type: string
-     *                 maxLength: 255
-     *                 default: "My Username"
-     *                 description: The new display name
-     *                 required: false
-     *               description:
-     *                 type: string
-     *                 maxLength: 255
-     *                 default: "I am a user"
-     *                 description: The new description
-     *                 required: false
-     *     security:
-     *       - cookieAuth: []
+     * /api/updateUser:
+     *   post:
+     *     summary: Update user properties
+     *     tags: [User Management]
+     *     description: Update a user
+     *     parameters:
+     *       - name: user_info
+     *         in: body
+     *         required: true
+     *         schema:
+     *           type: object
+     *           properties:
+     *             username:
+     *               type: string
+     *               minLength: 3
+     *               maxLength: 255
+     *               default: "myusername"
+     *               description: The new username
+     *               required: false
+     *             displayname:
+     *               type: string
+     *               maxLength: 255
+     *               default: "My Username"
+     *               description: The new display name
+     *               required: false
+     *             description:
+     *               type: string
+     *               maxLength: 255
+     *               default: "I am a user"
+     *               description: The new description
+     *               required: false
+     *   security:
+     *     - cookieAuth: []
      */
     static updateUser(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
@@ -292,23 +292,23 @@ export class AuthEndpoints {
 
     /**
      * @swagger
-     *   /api/permissions:
-     *     get:
-     *       summary: Get a list of permissions
-     *       tags: [Permission Management]
-     *       description: Get all permissions
-     *       responses:
-     *         200:
-     *           description: All permissions
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 permissions:
-     *                   type: array
-     *                   items:
-     *                     type: object
+     * /api/permissions:
+     *   get:
+     *     summary: Get a list of permissions
+     *     tags: [Permission Management]
+     *     description: Get all permissions
+     *     responses:
+     *       200:
+     *         description: All permissions
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               permissions:
+     *                 type: array
+     *                 items:
+     *                   type: object
      */
     static getAllPermissions(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
@@ -320,23 +320,23 @@ export class AuthEndpoints {
 
     /**
      * @swagger
-     *   /api/roles:
-     *     get:
-     *       summary: Get a list of roles
-     *       tags: [Permission Management]
-     *       description: Get all roles
-     *       responses:
-     *         200:
-     *           description: All roles
-     *           content:
-     *             application/json:
-     *               schema:
-     *                 type: object
-     *                 properties:
-     *                   roles:
-     *                     type: array
-     *                     items:
-     *                       type: object
+     * /api/roles:
+     *   get:
+     *     summary: Get a list of roles
+     *     tags: [Permission Management]
+     *     description: Get all roles
+     *     responses:
+     *       200:
+     *         description: All roles
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 roles:
+     *                   type: array
+     *                   items:
+     *                     type: object
      */
     static getAllRoles(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
@@ -466,31 +466,31 @@ export class AuthEndpoints {
     /**
      * @swagger
      * /api/permissions:
-     *  get:
-     *    summary: Get all permissions
-     *    tags: [Permission Management]
-     *    parameters:
-     *      - name: roleId
-     *        in: query
-     *        description: ID of the role to get permissions for
-     *        required: true
-     *        schema:
-     *          type: integer
-     *    description: Get permissions of a role by its ID
-     *    responses:
-     *      200:
-     *        description: A list of permissions for the role
-     *        content:
-     *          application/json:
-     *            schema:
-     *              type: object
-     *              properties:
-     *                permissions:
-     *                  type: array
-     *                  items:
-     *                    $ref: '#/definitions/Permission'
-     *      400:
-     *        description: roleId is required
+     *   get:
+     *     summary: Get all permissions
+     *     tags: [Permission Management]
+     *     parameters:
+     *       - name: roleId
+     *         in: query
+     *         description: ID of the role to get permissions for
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     description: Get permissions of a role by its ID
+     *     responses:
+     *       200:
+     *         description: A list of permissions for the role
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 permissions:
+     *                   type: array
+     *                   items:
+     *                     $ref: '#/definitions/Permission'
+     *       400:
+     *         description: roleId is required
      */
     static getRolePermissions(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
