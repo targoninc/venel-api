@@ -40,6 +40,7 @@ export class AuthenticationFeature {
         app.get("/api/getUserPermissions", AuthActions.checkAuthenticated, AuthEndpoints.getUserPermissions(db));
         app.get("/api/getUserRoles", AuthActions.checkAuthenticated, AuthEndpoints.getUserRoles(db));
         app.post("/api/addRoleToUser", AuthActions.checkAuthenticated, AuthEndpoints.addRoleToUser(db));
+        app.post("/api/removeRoleFromUser", AuthActions.checkAuthenticated, AuthEndpoints.removeRoleFromUser(db));
 
         return app;
     }

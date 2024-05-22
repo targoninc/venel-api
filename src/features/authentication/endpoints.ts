@@ -305,4 +305,26 @@ export class AuthEndpoints {
             res.send({message: "Role added to user successfully"});
         }
     }
+
+    static removeRoleFromUser(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const {userId, roleId} = req.body;
+            if (!userId || !roleId) {
+                res.status(400);
+                res.send({error: "userId and roleId are required"});
+                return;
+            }
+
+            const user = req.user as User;
+            const selfPermissions = await db.getUserPermissions(user.id);
+            if (!selfPermissions || !selfPermissions.some(p => p.name === PermissionsList.removeUserFromRole.name)) {
+                res.status(403);
+                res.send({error: "You do not have permission to remove a role from a user"});
+                return;
+            }
+
+            await db.deleteUserRole(parseInt(userId), parseInt(roleId));
+            res.send({message: "Role removed from user successfully"});
+        }
+    }
 }

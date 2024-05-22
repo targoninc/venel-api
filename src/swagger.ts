@@ -522,7 +522,94 @@ export const swaggerOptions = {
                         }
                     ]
                 }
-            }
+            },
+            "/api/removeRoleFromUser": {
+                post: {
+                    summary: "Removes a role from a user",
+                    tags: [
+                        "User Management"
+                    ],
+                    requestBody: {
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        userId: {
+                                            type: "number",
+                                            description: "The user ID for whom a role should be removed"
+                                        },
+                                        roleId: {
+                                            type: "number",
+                                            description: "The role ID to be removed from the user"
+                                        }
+                                    },
+                                    required: [
+                                        "userId",
+                                        "roleId"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Role removed from user successfully",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            message: {
+                                                type: "string",
+                                                example: "Role removed from user successfully"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        400: {
+                            description: "userId and roleId are required",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            error: {
+                                                type: "string",
+                                                example: "userId and roleId are required"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        403: {
+                            description: "You do not have permission to remove a role from a user",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            error: {
+                                                type: "string",
+                                                example: "You do not have permission to remove a role from a user"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
         }
     }
 }
