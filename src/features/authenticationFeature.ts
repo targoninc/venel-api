@@ -1,4 +1,4 @@
-import express from "express";
+import express, {Application} from "express";
 import session from "express-session";
 import passport, {SessionOptions} from "passport";
 import {PassportDeserializeUser, PassportSerializeUser, PassportStrategy} from "./authentication/passport.js";
@@ -7,8 +7,7 @@ import {AuthActions} from "./authentication/actions";
 import {MariaDbDatabase} from "./database/mariaDbDatabase.js";
 
 export class AuthenticationFeature {
-    static enable(__dirname: string, db: MariaDbDatabase) {
-        const app = express();
+    static enable(__dirname: string, app: Application, db: MariaDbDatabase) {
         app.use(session({
             secret: process.env.SESSION_SECRET || "secret",
             resave: false,
@@ -24,23 +23,24 @@ export class AuthenticationFeature {
         passport.serializeUser(PassportSerializeUser());
         passport.deserializeUser(PassportDeserializeUser(db));
 
-        app.post("/api/authorize", AuthEndpoints.authorizeUser(db));
-        app.post("/api/register", AuthEndpoints.registerUser(db));
-        app.post("/api/updateUser", AuthEndpoints.updateUser(db));
-        app.post("/api/logout", AuthEndpoints.logout());
-        app.get("/api/getUser", AuthActions.checkAuthenticated, AuthEndpoints.getUser());
-        app.post("/api/updateUser", AuthActions.checkAuthenticated, AuthEndpoints.updateUser(db));
+        const prefix = "/api/auth";
+        app.post(`${prefix}/authorize`, AuthEndpoints.authorizeUser(db));
+        app.post(`${prefix}/register`, AuthEndpoints.registerUser(db));
+        app.post(`${prefix}/logout`, AuthEndpoints.logout());
+        app.get(`${prefix}/getUser`, AuthActions.checkAuthenticated, AuthEndpoints.getUser());
+        app.post(`${prefix}/updateUser`, AuthActions.checkAuthenticated, AuthEndpoints.updateUser(db));
+        app.delete(`${prefix}/deleteUser`, AuthActions.checkAuthenticated, AuthEndpoints.deleteUser(db));
 
         // Permissions and roles
-        app.get("/api/permissions", AuthEndpoints.getAllPermissions(db));
-        app.get("/api/rolePermissions", AuthEndpoints.getRolePermissions(db));
-        app.get("/api/roles", AuthEndpoints.getAllRoles(db));
-        app.post("/api/createRole", AuthActions.checkAuthenticated, AuthEndpoints.createRole(db));
-        app.post("/api/addPermissionToRole", AuthActions.checkAuthenticated, AuthEndpoints.addPermissionToRole(db));
-        app.get("/api/getUserPermissions", AuthActions.checkAuthenticated, AuthEndpoints.getUserPermissions(db));
-        app.get("/api/getUserRoles", AuthActions.checkAuthenticated, AuthEndpoints.getUserRoles(db));
-        app.post("/api/addRoleToUser", AuthActions.checkAuthenticated, AuthEndpoints.addRoleToUser(db));
-        app.post("/api/removeRoleFromUser", AuthActions.checkAuthenticated, AuthEndpoints.removeRoleFromUser(db));
+        app.get(`${prefix}/permissions`, AuthEndpoints.getAllPermissions(db));
+        app.get(`${prefix}/rolePermissions`, AuthEndpoints.getRolePermissions(db));
+        app.get(`${prefix}/roles`, AuthEndpoints.getAllRoles(db));
+        app.post(`${prefix}/createRole`, AuthActions.checkAuthenticated, AuthEndpoints.createRole(db));
+        app.post(`${prefix}/addPermissionToRole`, AuthActions.checkAuthenticated, AuthEndpoints.addPermissionToRole(db));
+        app.get(`${prefix}/getUserPermissions`, AuthActions.checkAuthenticated, AuthEndpoints.getUserPermissions(db));
+        app.get(`${prefix}/getUserRoles`, AuthActions.checkAuthenticated, AuthEndpoints.getUserRoles(db));
+        app.post(`${prefix}/addRoleToUser`, AuthActions.checkAuthenticated, AuthEndpoints.addRoleToUser(db));
+        app.delete(`${prefix}/removeRoleFromUser`, AuthActions.checkAuthenticated, AuthEndpoints.removeRoleFromUser(db));
 
         return app;
     }
