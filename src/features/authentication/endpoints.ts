@@ -1,6 +1,6 @@
 import passport from "passport";
 import {CLI} from "../../tooling/CLI";
-import {AuthActions, safeUser} from "./actions";
+import {AuthActions, SafeUser, safeUser} from "./actions";
 import {IP} from "../../tooling/IP";
 import {PermissionsList} from "../../enums/permissionsList";
 import {Request, Response} from "express";
@@ -73,12 +73,7 @@ export class AuthEndpoints {
                 return next(err);
             }
 
-            const outUser = <User & {
-                justRegistered?: boolean;
-            }>{
-                id: user.id,
-                username: user.username,
-            };
+            const outUser = <SafeUser & { justRegistered?: boolean; }>safeUser(user);
             if (!existing) {
                 outUser.justRegistered = true;
             }
@@ -93,11 +88,13 @@ export class AuthEndpoints {
         return async (req: Request, res: Response, next: Function) => {
             const cleanUsername = req.body.username.toLowerCase();
             if (cleanUsername.length < 3) {
+                res.status(400);
                 res.send({error: "Username must be at least 3 characters long"});
                 return;
             }
             const existing = await db.getUserByUsername(cleanUsername);
             if (existing) {
+                res.status(400);
                 res.send({error: "Username already exists on this instance"});
                 return;
             }
@@ -106,17 +103,27 @@ export class AuthEndpoints {
             const passwordMaxLength = 64;
             const passwordMustContainNumbers = true;
             if (req.body.password < passwordMinLength) {
+                res.status(400);
                 res.send({error: `Password must be at least ${passwordMinLength} characters long`});
                 return;
             }
             if (req.body.password > passwordMaxLength) {
+                res.status(400);
                 res.send({error: `Password must be at most ${passwordMaxLength} characters long`});
                 return;
             }
             if (passwordMustContainNumbers && !/\d/.test(req.body.password)) {
+                res.status(400);
                 res.send({error: "Password must contain at least one number"});
                 return;
             }
+            const users = await db.getUsers();
+            if (users && users.length > 0 && process.env.ALLOW_FREE_REGISTRATION !== "true") {
+                res.status(403);
+                res.send({error: "This instance does not allow free registration"});
+                return;
+            }
+            CLI.info(`Registering user ${cleanUsername}`);
             await AuthActions.registerUser(req, db, cleanUsername, req.body.password);
 
             passport.authenticate("local", async (err: any, user: User) => {
