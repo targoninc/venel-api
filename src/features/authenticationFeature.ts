@@ -28,7 +28,7 @@ export class AuthenticationFeature {
         app.post(`${prefix}/register`, AuthEndpoints.registerUser(db));
         app.post(`${prefix}/logout`, AuthEndpoints.logout());
         app.get(`${prefix}/getUser`, AuthActions.checkAuthenticated, AuthEndpoints.getUser());
-        app.post(`${prefix}/updateUser`, AuthActions.checkAuthenticated, AuthEndpoints.updateUser(db));
+        app.patch(`${prefix}/updateUser`, AuthActions.checkAuthenticated, AuthEndpoints.updateUser(db));
         app.delete(`${prefix}/deleteUser`, AuthActions.checkAuthenticated, AuthEndpoints.deleteUser(db));
 
         // Permissions and roles

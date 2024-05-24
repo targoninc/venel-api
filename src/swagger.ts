@@ -137,7 +137,7 @@ export const swaggerOptions = {
                 }
             },
             "/api/auth/updateUser": {
-                post: {
+                patch: {
                     summary: "Update user properties",
                     tags: [
                         "User Management"
@@ -727,6 +727,94 @@ export const swaggerOptions = {
                         },
                         404: {
                             description: "Not Found: Channel not found"
+                        }
+                    }
+                }
+            },
+            "/api/messaging/deleteMessage": {
+                delete: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Delete a message",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Delete a message",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        messageId: {
+                                            type: "integer",
+                                            description: "The ID of the message to delete"
+                                        }
+                                    },
+                                    required: ["messageId"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Message deleted successfully"
+                        },
+                        400: {
+                            description: "Bad Request: Message ID is required"
+                        },
+                        404: {
+                            description: "Not Found: Message not found"
+                        }
+                    }
+                }
+            },
+            "/api/messaging/editMessage": {
+                patch: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Edit a message",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Edit a message",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        messageId: {
+                                            type: "integer",
+                                            description: "The ID of the message to edit"
+                                        },
+                                        text: {
+                                            type: "string",
+                                            description: "The new text of the message"
+                                        }
+                                    },
+                                    required: ["messageId", "text"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Message edited successfully"
+                        },
+                        400: {
+                            description: "Bad Request: Message ID and/or text are required"
+                        },
+                        404: {
+                            description: "Not Found: Message not found"
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 import mariadb from 'mariadb';
 import {CLI} from "../../tooling/CLI";
-import {Id, Permission, Role, User} from "./models";
+import {Channel, ChannelMember, Id, Message, Permission, Role, User} from "./models";
 
 export class MariaDbDatabase {
     private readonly host: string;
@@ -139,13 +139,13 @@ WHERE ur.userId = ?`, [userId]);
         await this.query("INSERT INTO venel.messages (channelId, senderId, text) VALUES (?, ?, ?)", [channelId, senderId, text]);
     }
 
-    async getChannelById(channelId: Id) {
+    async getChannelById(channelId: Id): Promise<Channel | null> {
         const rows = await this.query("SELECT * FROM venel.channels WHERE id = ?", [channelId]);
         return rows ? rows[0] : null;
     }
 
-    async getMessagesForChannel(channelId: Id) {
-        return await this.query("SELECT * FROM venel.messages WHERE channelId = ?", [channelId]);
+    async getMessagesForChannel(channelId: Id, offset: number): Promise<Message[] | null> {
+        return await this.query("SELECT * FROM venel.messages WHERE channelId = ? ORDER BY createdAt DESC LIMIT ?", [channelId, offset]);
     }
 
     async deleteUser(id: Id) {
@@ -167,7 +167,20 @@ WHERE ur.userId = ?`, [userId]);
         return channelId;
     }
 
-    async getChannelMembers(channelId: Id) {
+    async getChannelMembers(channelId: Id): Promise<ChannelMember[] | null> {
         return await this.query("SELECT * FROM venel.channelMembers WHERE channelId = ?", [channelId]);
+    }
+
+    async getMessageById(messageId: Id): Promise<Message | null> {
+        const rows = await this.query("SELECT * FROM venel.messages WHERE id = ?", [messageId]);
+        return rows ? rows[0] : null;
+    }
+
+    async deleteMessage(messageId: Id) {
+        await this.query("DELETE FROM venel.messages WHERE id = ?", [messageId]);
+    }
+
+    async editMessage(messageId: Id, text: string) {
+        await this.query("UPDATE venel.messages SET text = ? WHERE id = ?", [text, messageId]);
     }
 }
