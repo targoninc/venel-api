@@ -687,6 +687,11 @@ export const swaggerOptions = {
             },
             "/api/messaging/sendMessage": {
                 post: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
                     summary: "Send a message to a channel",
                     tags: [
                         "Messaging"
@@ -728,6 +733,11 @@ export const swaggerOptions = {
             },
             "/api/channels/createDirect": {
                 post: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
                     summary: "Create a direct message channel",
                     tags: [
                         "Messaging"

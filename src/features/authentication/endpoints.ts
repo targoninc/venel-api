@@ -86,7 +86,6 @@ export class AuthEndpoints {
 
     static registerUser(db: MariaDbDatabase): (arg0: any, arg1: any, arg2: Function) => Promise<void> {
         return async (req: any, res: any, next: Function) => {
-            console.log(req);
             let cleanUsername = req.body.username;
             if (!cleanUsername) {
                 res.status(400);

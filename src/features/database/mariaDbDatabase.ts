@@ -166,4 +166,8 @@ WHERE ur.userId = ?`, [userId]);
         ]);
         return channelId;
     }
+
+    async getChannelMembers(channelId: Id) {
+        return await this.query("SELECT * FROM venel.channelMembers WHERE channelId = ?", [channelId]);
+    }
 }

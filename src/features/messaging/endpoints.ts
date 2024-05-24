@@ -1,6 +1,7 @@
 import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {Request, Response} from "express";
-import {User} from "../database/models";
+import {ChannelMember, User} from "../database/models";
+import {CLI} from "../../tooling/CLI";
 
 export class MessagingEndpoints {
     static sendMessage(db: MariaDbDatabase) {
@@ -25,7 +26,14 @@ export class MessagingEndpoints {
                 return;
             }
 
+            const members = await db.getChannelMembers(channelId);
+            if (!members || !members.find((m: ChannelMember) => m.userId === user.id)) {
+                res.status(403).send("You are not a member of this channel");
+                return;
+            }
             await db.createMessage(channelId, user.id, text);
+            CLI.success(`Message sent to channel ${channelId} by user ${user.id}.`);
+            res.json({message: "Message sent"});
         }
     }
 
@@ -46,6 +54,7 @@ export class MessagingEndpoints {
             }
 
             const channelId = await db.createChannelDm(user.id, targetUserId);
+            CLI.success(`Created DM channel with ID ${channelId}.`);
             res.json({channelId});
         }
     }
