@@ -98,14 +98,14 @@ export const swaggerOptions = {
                                             type: "string",
                                             minLength: 3,
                                             maxLength: 255,
-                                            default: "myusername"
+                                            example: "myusername"
                                         },
                                         password: {
                                             type: "string",
                                             format: "password",
                                             minLength: 16,
                                             maxLength: 64,
-                                            default: "testpassword1234"
+                                            example: "testpassword1234"
                                         }
                                     }
                                 }
@@ -155,19 +155,19 @@ export const swaggerOptions = {
                                             type: "string",
                                             minLength: 3,
                                             maxLength: 255,
-                                            default: "myusername",
+                                            example: "myusername",
                                             description: "The new username",
                                         },
                                         displayname: {
                                             type: "string",
                                             maxLength: 255,
-                                            default: "My Username",
+                                            example: "My Username",
                                             description: "The new display name",
                                         },
                                         description: {
                                             type: "string",
                                             maxLength: 255,
-                                            default: "I am a user",
+                                            example: "I am a user",
                                             description: "The new description",
                                         }
                                     }
@@ -438,7 +438,7 @@ export const swaggerOptions = {
                             required: true,
                             schema: {
                                 type: "string",
-                                default: 1,
+                                example: 1,
                                 description: "The id of the user"
                             }
                         }
@@ -479,7 +479,7 @@ export const swaggerOptions = {
                             required: true,
                             schema: {
                                 type: "string",
-                                default: 1,
+                                example: 1,
                                 description: "The id of the user"
                             }
                         }
