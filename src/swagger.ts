@@ -8,6 +8,28 @@ export const swaggerOptions = {
         },
         openapi: "3.1.0",
         paths: {
+            "/api/auth/logout": {
+                post: {
+                    summary: "Logout a user",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Logout a user",
+                    responses: {
+                        200: {
+                            description: "User logged out successfully"
+                        },
+                        401: {
+                            description: "Unauthorized"
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
             "/api/auth/authorize": {
                 post: {
                     summary: "Authorize User",
