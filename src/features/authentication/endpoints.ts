@@ -35,14 +35,14 @@ export class AuthEndpoints {
         async function authUser(req: Request, res: Response, next: Function): Promise<void> {
             const cleanUsername = req.body.username.toLowerCase();
             if (cleanUsername.length < 3) {
+                res.status(400);
                 res.send({error: "Username must be at least 3 characters long"});
-
                 return;
             }
             const existing = await db.getUserByUsername(cleanUsername);
             if (!existing) {
+                res.status(404);
                 res.send({error: "This username does not exist on this instance"});
-
                 return;
             }
 
@@ -57,6 +57,7 @@ export class AuthEndpoints {
                     return next(err);
                 }
                 if (!user) {
+                    res.status(401);
                     res.send({error: "Invalid username or password"});
                     return;
                 }
