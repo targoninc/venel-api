@@ -39,7 +39,7 @@ export class AuthActions {
             req.requestId = Math.random().toString(36).substring(7);
             return next();
         }
-        res.send({error: "Not authenticated"});
+        res.status(401).send({error: "Not authenticated"});
     }
 }
 

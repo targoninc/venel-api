@@ -27,12 +27,6 @@ export class AuthEndpoints {
 
     static getUser(): (arg0: Request, arg1: Response) => void {
         return (req: Request, res: Response) => {
-            if (!req.user) {
-                res.status(401);
-                res.send({error: "Not authenticated"});
-                return;
-            }
-
             res.send({user: req.user});
         };
     }
