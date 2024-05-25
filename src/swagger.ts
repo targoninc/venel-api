@@ -911,7 +911,7 @@ export const swaggerOptions = {
                     parameters: [
                         {
                             name: "channelId",
-                            in: "path",
+                            in: "query",
                             description: "The ID of the channel to get messages for",
                             required: true,
                             schema: {

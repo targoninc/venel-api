@@ -140,7 +140,7 @@ export class MessagingEndpoints {
         return async (req: Request, res: Response) => {
             const user = req.user as User;
 
-            const channelId = req.params.channelId;
+            const channelId = req.query.channelId as string;
             if (!channelId) {
                 res.status(400).send("Channel ID is required");
                 return;
