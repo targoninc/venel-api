@@ -153,11 +153,12 @@ WHERE ur.userId = ?`, [userId]);
     }
 
     async createChannelDm(id: Id, targetUserId: Id) {
-        await this.query("INSERT INTO venel.channels (type) VALUES ('dm')");
-        const rows = await this.query("SELECT LAST_INSERT_ID() AS id");
+        const timestamp = new Date().toISOString();
+        await this.query("INSERT INTO venel.channels (type, name) VALUES ('dm', ?)", [timestamp + " (DM)"]);
+        const rows = await this.query("SELECT id FROM venel.channels WHERE name = ?", [timestamp + " (DM)"]);
         const channelId = rows ? rows[0].id : null;
         if (!channelId) {
-            throw new Error("Could not create channel.");
+            throw new Error("Could not create channel");
         }
 
         await this.query("INSERT INTO venel.channelMembers (channelId, userId) VALUES (?, ?), (?, ?)", [
@@ -182,5 +183,9 @@ WHERE ur.userId = ?`, [userId]);
 
     async editMessage(messageId: Id, text: string) {
         await this.query("UPDATE venel.messages SET text = ? WHERE id = ?", [text, messageId]);
+    }
+
+    async getChannelsForUser(id: Id): Promise<Channel[] | null> {
+        return await this.query("SELECT c.id, c.type, c.name, c.createdAt, c.updatedAt FROM venel.channels c INNER JOIN venel.channelMembers cm ON c.id = cm.channelId WHERE cm.userId = ?", [id]);
     }
 }

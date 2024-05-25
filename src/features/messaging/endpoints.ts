@@ -154,4 +154,13 @@ export class MessagingEndpoints {
             res.json(messages);
         }
     }
+
+    static getChannels(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+
+            const channels = await db.getChannelsForUser(user.id);
+            res.json(channels);
+        }
+    }
 }

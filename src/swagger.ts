@@ -873,6 +873,86 @@ export const swaggerOptions = {
                         }
                     }
                 }
+            },
+            "/api/channels/getMessages": {
+                get: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Get messages for a channel",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Get messages for a channel",
+                    parameters: [
+                        {
+                            name: "channelId",
+                            in: "path",
+                            description: "The ID of the channel to get messages for",
+                            required: true,
+                            schema: {
+                                type: "integer"
+                            }
+                        },
+                        {
+                            name: "offset",
+                            in: "query",
+                            description: "The offset to start from",
+                            schema: {
+                                type: "integer"
+                            }
+                        }
+                    ],
+                    responses: {
+                        200: {
+                            description: "Messages retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "array",
+                                        items: {
+                                            type: "object"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        400: {
+                            description: "Bad Request: Channel ID is required"
+                        }
+                    }
+                }
+            },
+            "/api/channels/getChannels": {
+                get: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Get channels for a user",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Get channels for a user",
+                    responses: {
+                        200: {
+                            description: "Channels retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "array",
+                                        items: {
+                                            type: "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         components: {

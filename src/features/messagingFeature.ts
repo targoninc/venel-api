@@ -15,6 +15,7 @@ export class MessagingFeature {
         const cPrefix = "/api/channels";
         app.post(`${cPrefix}/createDirect`, AuthActions.checkAuthenticated, MessagingEndpoints.createChannelDm(db));
         app.get(`${cPrefix}/getMessages`, AuthActions.checkAuthenticated, MessagingEndpoints.getMessages(db));
+        app.get(`${cPrefix}/getChannels`, AuthActions.checkAuthenticated, MessagingEndpoints.getChannels(db));
 
         return app;
     }
