@@ -1,8 +1,9 @@
 import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {Request, Response} from "express";
-import {ChannelMember, User} from "../database/models";
+import {ChannelMember, Message, User} from "../database/models";
 import {CLI} from "../../tooling/CLI";
 import {PermissionsList} from "../../enums/permissionsList";
+import {SafeUser, safeUser} from "../authentication/actions";
 
 export class MessagingEndpoints {
     static async checkChannelAccess(db: MariaDbDatabase, user: User, channelId: number, res: Response) {
@@ -151,6 +152,27 @@ export class MessagingEndpoints {
             }
             const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
             const messages = await db.getMessagesForChannel(parseInt(channelId), offset);
+            if (!messages) {
+                res.json([]);
+                return;
+            }
+
+            const users: Map<number, User> = new Map();
+            for (const message of messages as ReceivableMessage[]) {
+                if (!message.senderId) {
+                    continue;
+                }
+
+                if (!users.has(message.senderId)) {
+                    const user = await db.getUserById(message.senderId);
+                    if (user) {
+                        users.set(message.senderId, user);
+                    }
+                }
+
+                const sender = users.get(message.senderId);
+                message.sender = safeUser(sender as User);
+            }
             res.json(messages);
         }
     }
@@ -163,4 +185,8 @@ export class MessagingEndpoints {
             res.json(channels);
         }
     }
+}
+
+export interface ReceivableMessage extends Message {
+    sender: SafeUser;
 }

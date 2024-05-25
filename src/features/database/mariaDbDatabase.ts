@@ -145,7 +145,7 @@ WHERE ur.userId = ?`, [userId]);
     }
 
     async getMessagesForChannel(channelId: Id, offset: number): Promise<Message[] | null> {
-        return await this.query("SELECT * FROM venel.messages WHERE channelId = ? ORDER BY createdAt DESC LIMIT ?", [channelId, offset]);
+        return await this.query("SELECT * FROM venel.messages m WHERE channelId = ? ORDER BY createdAt DESC LIMIT 100 OFFSET ?", [channelId, offset]);
     }
 
     async deleteUser(id: Id) {
