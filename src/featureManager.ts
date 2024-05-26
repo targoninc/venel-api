@@ -7,6 +7,7 @@ import swaggerJsDoc from "swagger-jsdoc";
 import {swaggerOptions} from "./swagger";
 import swaggerUI from "swagger-ui-express";
 import cors from "cors";
+import {LiveFeature} from "./features/liveFeature";
 
 export class FeatureManager {
     static async enable(__dirname: string) {
@@ -18,6 +19,7 @@ export class FeatureManager {
         }));
         AuthenticationFeature.enable(__dirname, app, db);
         MessagingFeature.enable(app, db);
+        LiveFeature.enable(app, db);
 
         FeatureManager.addSwagger(__dirname, app);
 

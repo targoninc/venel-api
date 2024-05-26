@@ -3,11 +3,14 @@ import WebSocket from "ws";
 import {MessagingEndpoints} from "./messaging/endpoints";
 import {CLI} from "../tooling/CLI";
 import {User} from "./database/models";
-import {Application} from "express";
+import express, {Application, Request} from "express";
 import { createServer } from "http";
+import {AuthActions} from "./authentication/actions";
+import {MockResponse} from "../tooling/MockResponse";
+import * as stream from "node:stream";
 
 export class LiveFeature {
-    static async enable(db: MariaDbDatabase, app: Application) {
+    static enable(app: Application, db: MariaDbDatabase) {
         const server = createServer(app);
         const wss = new WebSocket.Server({
             noServer: true
@@ -42,26 +45,42 @@ export class LiveFeature {
             });
         });
 
-        server.on("upgrade", (request, socket, head) => {
+        server.on("upgrade", (req, socket, head) => {
             socket.on('error', CLI.error);
 
-            // This function is not defined on purpose. Implement it with your own logic.
-            authenticate(request, function next(err, client) {
+            AuthActions.checkAuthenticated(req as Request & { requestId?: string }, this.getMockResponse(socket), function next(err: any, client: any) {
                 if (err || !client) {
                     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
                     socket.destroy();
                     return;
                 }
 
-                socket.removeListener('error', onSocketError);
+                socket.removeListener('error', CLI.error);
 
-                wss.handleUpgrade(request, socket, head, function done(ws) {
-                    wss.emit('connection', ws, request, client);
+                wss.handleUpgrade(req, socket, head, function done(ws) {
+                    wss.emit('connection', ws, req, client);
                 });
             });
         });
 
         server.listen(8080);
+    }
+
+    static getMockResponse(socket: stream.Duplex) {
+        return new MockResponse((code: number) => {
+            const strings: Record<number, string> = {
+                401: 'Unauthorized',
+                403: 'Forbidden',
+                404: 'Not Found',
+                500: 'Internal Server Error'
+            };
+            const text = strings[code] ?? 'Internal Server Error';
+            socket.write(`HTTP/1.1 ${code} ${text}\r\r`);
+            socket.destroy();
+        }, (data: any) => {
+            socket.write(`HTTP/1.1 200 OK\r\n\r\n${data}`);
+            socket.destroy();
+        }) as unknown as express.Response;
     }
 
     static async sendMessage(data: any, user: User, send: Function, error: Function, db: MariaDbDatabase) {
