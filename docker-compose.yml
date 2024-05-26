@@ -6,8 +6,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     ports:
       - "3000:3000"
+      - "8912:8912"
     depends_on:
       - db
     env_file:
@@ -16,6 +18,7 @@ services:
   db:
     container_name: mariadb
     image: mariadb:10.5
+    restart: always
     ports:
       - "3306:3306"
     env_file:

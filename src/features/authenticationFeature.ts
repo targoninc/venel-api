@@ -5,17 +5,37 @@ import {PassportDeserializeUser, PassportSerializeUser, PassportStrategy} from "
 import {AuthEndpoints} from "./authentication/endpoints";
 import {AuthActions} from "./authentication/actions";
 import {MariaDbDatabase} from "./database/mariaDbDatabase.js";
+import {User} from "./database/models";
+import {CLI} from "../tooling/CLI";
 
 export class AuthenticationFeature {
-    static enable(__dirname: string, app: Application, db: MariaDbDatabase) {
+    static enable(__dirname: string, app: Application, db: MariaDbDatabase, userMap: Map<string, User>) {
         app.use(session({
             secret: process.env.SESSION_SECRET || "secret",
+            rolling: true,
             resave: false,
             saveUninitialized: false
         }));
 
         app.use(passport.initialize());
         app.use(passport.session(<SessionOptions>{}));
+
+        app.use((req, res, next) => {
+            let connectSid = req.headers.cookie?.split(';').find((c: string) => c.trim().startsWith('connect.sid='));
+            if (connectSid) {
+                connectSid = connectSid.split('=')[1];
+            }
+            if (req.isAuthenticated() && connectSid) {
+                const user = req.user as User;
+                CLI.debug(`User ${user.id} saved to user map: ${connectSid}`);
+                userMap.set(connectSid, user);
+            } else if (connectSid) {
+                CLI.debug(`User not authenticated, but connect.sid found. Deleting from user map: ${connectSid}`);
+                userMap.delete(connectSid);
+            }
+
+            next();
+        });
 
         app.use(express.json());
 

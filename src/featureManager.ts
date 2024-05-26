@@ -8,6 +8,7 @@ import {swaggerOptions} from "./swagger";
 import swaggerUI from "swagger-ui-express";
 import cors from "cors";
 import {LiveFeature} from "./features/liveFeature";
+import {User} from "./features/database/models";
 
 export class FeatureManager {
     static async enable(__dirname: string) {
@@ -17,9 +18,10 @@ export class FeatureManager {
             origin: process.env.UI_DEPLOYMENT_URL ?? 'http://localhost:3001',
             credentials: true
         }));
-        AuthenticationFeature.enable(__dirname, app, db);
+        const userMap = new Map<string, User>();
+        AuthenticationFeature.enable(__dirname, app, db, userMap);
         MessagingFeature.enable(app, db);
-        LiveFeature.enable(app, db);
+        LiveFeature.enable(app, userMap, db);
 
         FeatureManager.addSwagger(__dirname, app);
 

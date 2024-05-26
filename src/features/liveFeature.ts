@@ -1,20 +1,17 @@
 import {MariaDbDatabase} from "./database/mariaDbDatabase";
-import WebSocket from "ws";
+import {ServerOptions, WebSocketServer} from "ws";
 import {MessagingEndpoints} from "./messaging/endpoints";
 import {CLI} from "../tooling/CLI";
 import {User} from "./database/models";
-import express, {Application, Request} from "express";
-import { createServer } from "http";
-import {AuthActions} from "./authentication/actions";
-import {MockResponse} from "../tooling/MockResponse";
-import * as stream from "node:stream";
+import {Application} from "express";
+import {createServer} from "http";
 
 export class LiveFeature {
-    static enable(app: Application, db: MariaDbDatabase) {
+    static enable(app: Application, userMap: Map<string, User>, db: MariaDbDatabase) {
         const server = createServer(app);
-        const wss = new WebSocket.Server({
+        const wss = new WebSocketServer({
             noServer: true
-        });
+        } as ServerOptions);
 
         wss.on("connection", (ws: any) => {
             ws.user = null;
@@ -48,39 +45,30 @@ export class LiveFeature {
         server.on("upgrade", (req, socket, head) => {
             socket.on('error', CLI.error);
 
-            AuthActions.checkAuthenticated(req as Request & { requestId?: string }, this.getMockResponse(socket), function next(err: any, client: any) {
-                if (err || !client) {
-                    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-                    socket.destroy();
-                    return;
-                }
+            let connectSid = req.headers.cookie?.split(';').find((c: string) => c.trim().startsWith('connect.sid='));
+            if (!connectSid) {
+                socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+                socket.destroy();
+                return;
+            }
 
-                socket.removeListener('error', CLI.error);
-
+            connectSid = connectSid.split('=')[1];
+            if (userMap.has(connectSid)) {
+                const user = userMap.get(connectSid);
                 wss.handleUpgrade(req, socket, head, function done(ws) {
-                    wss.emit('connection', ws, req, client);
+                    wss.emit('connection', ws, { user });
                 });
-            });
+            } else {
+                CLI.debug("Unauthorized user tried to connect to live feature: " + connectSid);
+                socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+                socket.destroy();
+                return;
+            }
         });
 
-        server.listen(8080);
-    }
-
-    static getMockResponse(socket: stream.Duplex) {
-        return new MockResponse((code: number) => {
-            const strings: Record<number, string> = {
-                401: 'Unauthorized',
-                403: 'Forbidden',
-                404: 'Not Found',
-                500: 'Internal Server Error'
-            };
-            const text = strings[code] ?? 'Internal Server Error';
-            socket.write(`HTTP/1.1 ${code} ${text}\r\r`);
-            socket.destroy();
-        }, (data: any) => {
-            socket.write(`HTTP/1.1 200 OK\r\n\r\n${data}`);
-            socket.destroy();
-        }) as unknown as express.Response;
+        server.listen(8912, '0.0.0.0', () => {
+            CLI.success("Live feature enabled @ ws://localhost:8912");
+        });
     }
 
     static async sendMessage(data: any, user: User, send: Function, error: Function, db: MariaDbDatabase) {
