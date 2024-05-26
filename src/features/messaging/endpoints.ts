@@ -6,20 +6,24 @@ import {PermissionsList} from "../../enums/permissionsList";
 import {SafeUser, safeUser} from "../authentication/actions";
 
 export class MessagingEndpoints {
-    static async checkChannelAccess(db: MariaDbDatabase, user: User, channelId: number, res: Response) {
+    static async checkChannelAccess(db: MariaDbDatabase, user: User, channelId: number) {
         const channel = await db.getChannelById(channelId);
         if (!channel) {
-            res.status(404).send("Channel not found");
-            return false;
+            return {
+                error: "Channel not found",
+                code: 404
+            };
         }
 
         const members = await db.getChannelMembers(channelId);
         if (!members || !members.find((m: ChannelMember) => m.userId === user.id)) {
-            res.status(403).send("You are not a member of this channel");
-            return false;
+            return {
+                error: "You are not a member of this channel",
+                code: 403
+            };
         }
 
-        return true;
+        return null;
     }
 
     static sendMessage(db: MariaDbDatabase) {
@@ -38,7 +42,9 @@ export class MessagingEndpoints {
                 return;
             }
 
-            if (!await MessagingEndpoints.checkChannelAccess(db, user, channelId, res)) {
+            const invalid = await MessagingEndpoints.checkChannelAccess(db, user, channelId);
+            if (invalid !== null) {
+                res.status(invalid.code).send(invalid.error);
                 return;
             }
             await db.createMessage(channelId, user.id, text);
@@ -70,7 +76,9 @@ export class MessagingEndpoints {
                 }
             }
 
-            if (!await MessagingEndpoints.checkChannelAccess(db, user, message.channelId, res)) {
+            const invalid = await MessagingEndpoints.checkChannelAccess(db, user, message.channelId);
+            if (invalid !== null) {
+                res.status(invalid.code).send(invalid.error);
                 return;
             }
             await db.deleteMessage(messageId);
@@ -106,7 +114,9 @@ export class MessagingEndpoints {
                 return;
             }
 
-            if (!await MessagingEndpoints.checkChannelAccess(db, user, message.channelId, res)) {
+            const invalid = await MessagingEndpoints.checkChannelAccess(db, user, message.channelId);
+            if (invalid !== null) {
+                res.status(invalid.code).send(invalid.error);
                 return;
             }
             await db.editMessage(messageId, text);
@@ -147,7 +157,9 @@ export class MessagingEndpoints {
                 return;
             }
 
-            if (!await MessagingEndpoints.checkChannelAccess(db, user, parseInt(channelId), res)) {
+            const invalid = await MessagingEndpoints.checkChannelAccess(db, user, parseInt(channelId));
+            if (invalid !== null) {
+                res.status(invalid.code).send(invalid.error);
                 return;
             }
             const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
