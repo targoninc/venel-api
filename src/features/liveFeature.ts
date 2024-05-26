@@ -2,7 +2,7 @@ import {MariaDbDatabase} from "./database/mariaDbDatabase";
 import {ServerOptions, WebSocketServer} from "ws";
 import {MessagingEndpoints} from "./messaging/endpoints";
 import {CLI} from "../tooling/CLI";
-import {User} from "./database/models";
+import {Message, User} from "./database/models";
 import {Application} from "express";
 import {createServer} from "http";
 import {UserWebSocket} from "./live/UserWebSocket";
@@ -50,17 +50,20 @@ export class LiveFeature {
         server.on("upgrade", (req, socket, head) => {
             socket.on('error', CLI.error);
 
-            let connectSid = req.url?.split('?')[1]?.split('&').find((c: string) => c.startsWith('connect.sid='));
+            let connectSid = req.url?.split('?')[1]?.split('&').find((c: string) => c.startsWith('cid='));
             if (!connectSid) {
+                CLI.debug("No connect.sid found in query string: " + req.url);
                 socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
                 socket.destroy();
                 return;
             }
 
             connectSid = connectSid.split('=')[1];
+            connectSid = decodeURIComponent(connectSid);
             if (userMap.has(connectSid)) {
                 const user = userMap.get(connectSid);
                 if (!user) {
+                    CLI.debug("User not found in user map: " + connectSid);
                     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
                     socket.destroy();
                     return;
@@ -105,6 +108,10 @@ export class LiveFeature {
                 continue;
             }
 
+            if (ws.user.id === user.id) {
+                continue;
+            }
+
             const invalid = await MessagingEndpoints.checkChannelAccess(db, ws.user, channelId);
             if (invalid !== null) {
                 continue;
@@ -112,10 +119,15 @@ export class LiveFeature {
             CLI.debug(`Sending message to ${ws.user.id}`);
             ws.send(JSON.stringify({
                 type: "message",
-                message: {
+                message: <Message>{
                     text,
                     channelId,
-                    sender: safeUser(user)
+                    sender: safeUser(user),
+                    id: 0,
+                    senderId: user.id,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    parentMessageId: null,
                 }
             }));
         }

@@ -188,4 +188,9 @@ WHERE ur.userId = ?`, [userId]);
     async getChannelsForUser(id: Id): Promise<Channel[] | null> {
         return await this.query("SELECT c.id, c.type, c.name, c.createdAt, c.updatedAt FROM venel.channels c INNER JOIN venel.channelMembers cm ON c.id = cm.channelId WHERE cm.userId = ?", [id]);
     }
+
+    async getLastMessageForChannel(channelId: Id) {
+        const rows = await this.query("SELECT * FROM venel.messages WHERE channelId = ? ORDER BY createdAt DESC LIMIT 1", [channelId]);
+        return rows ? rows[0] : null;
+    }
 }

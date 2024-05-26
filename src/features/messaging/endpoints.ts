@@ -48,8 +48,10 @@ export class MessagingEndpoints {
                 return;
             }
             await db.createMessage(channelId, user.id, text);
+            const message = await db.getLastMessageForChannel(channelId);
+            message.sender = safeUser(user);
             CLI.success(`Message sent to channel ${channelId} by user ${user.id}.`);
-            res.json({message: "Message sent"});
+            res.json(message);
         }
     }
 
