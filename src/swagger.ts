@@ -975,6 +975,41 @@ export const swaggerOptions = {
                         }
                     }
                 }
+            },
+            "/api/auth/getConnectionSid": {
+                get: {
+                    summary: "Get the connection SID of the current user",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Get the connection SID of the current user",
+                    responses: {
+                        200: {
+                            description: "Connection SID retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            connectionSid: {
+                                                type: "string",
+                                                description: "The connection SID of the current user"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        401: {
+                            description: "Unauthorized"
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
             }
         },
         components: {

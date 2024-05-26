@@ -375,4 +375,14 @@ export class AuthEndpoints {
             res.send({message: "User deleted successfully"});
         }
     }
+
+    static getConnectionSid() {
+        return (req: Request, res: Response) => {
+            let connectSid = req.headers.cookie?.split(';').find((c: string) => c.trim().startsWith('connect.sid='));
+            if (connectSid) {
+                connectSid = connectSid.split('=')[1];
+            }
+            res.send({connectSid});
+        }
+    }
 }

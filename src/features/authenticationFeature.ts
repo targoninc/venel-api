@@ -27,10 +27,8 @@ export class AuthenticationFeature {
             }
             if (req.isAuthenticated() && connectSid) {
                 const user = req.user as User;
-                CLI.debug(`User ${user.id} saved to user map: ${connectSid}`);
                 userMap.set(connectSid, user);
             } else if (connectSid) {
-                CLI.debug(`User not authenticated, but connect.sid found. Deleting from user map: ${connectSid}`);
                 userMap.delete(connectSid);
             }
 
@@ -50,6 +48,7 @@ export class AuthenticationFeature {
         app.get(`${prefix}/getUser`, AuthActions.checkAuthenticated, AuthEndpoints.getUser());
         app.patch(`${prefix}/updateUser`, AuthActions.checkAuthenticated, AuthEndpoints.updateUser(db));
         app.delete(`${prefix}/deleteUser`, AuthActions.checkAuthenticated, AuthEndpoints.deleteUser(db));
+        app.get(`${prefix}/getConnectionSid`, AuthActions.checkAuthenticated, AuthEndpoints.getConnectionSid());
 
         // Permissions and roles
         app.get(`${prefix}/permissions`, AuthEndpoints.getAllPermissions(db));

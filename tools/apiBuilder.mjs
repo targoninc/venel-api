@@ -1,5 +1,5 @@
 import fs from "fs";
-import {swaggerOptions} from "../src/swagger.ts";
+import {swaggerOptions} from "../src/swagger.js";
 
 const start = `import {ApiBase} from "./ApiBase.mjs";
 
