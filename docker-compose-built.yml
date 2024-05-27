@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  app:
+    container_name: app
+    image: ${DOCKER_IMAGE_APP}
+    restart: always
+    ports:
+      - "3000:3000"
+      - "8912:8912"
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  db:
+    container_name: mariadb
+    image: mariadb:10.5
+    restart: always
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
