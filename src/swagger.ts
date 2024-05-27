@@ -1010,7 +1010,34 @@ export const swaggerOptions = {
                         }
                     ]
                 }
-            }
+            },
+            "/api/live/url": {
+                get: {
+                    summary: "Get the websocket URL",
+                    tags: [
+                        "Live"
+                    ],
+                    description: "Get the websocket URL",
+                    responses: {
+                        200: {
+                            description: "Websocket URL retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            url: {
+                                                type: "string",
+                                                description: "The websocket URL"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
         },
         components: {
             schemas: {

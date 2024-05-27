@@ -2,15 +2,18 @@ import {MariaDbDatabase} from "./database/mariaDbDatabase";
 import {ServerOptions, WebSocketServer} from "ws";
 import {MessagingEndpoints} from "./messaging/endpoints";
 import {CLI} from "../tooling/CLI";
-import {Message, User} from "./database/models";
+import {User} from "./database/models";
 import {Application} from "express";
 import {createServer} from "http";
 import {UserWebSocket} from "./live/UserWebSocket";
 import {safeUser} from "./authentication/actions";
 import {PermissionsList} from "../enums/permissionsList";
+import {LiveEndpoints} from "./live/endpoints";
 
 export class LiveFeature {
     static enable(app: Application, userMap: Map<string, User>, db: MariaDbDatabase) {
+        app.get("/api/live/url", LiveEndpoints.getWebsocketEndpoint());
+
         const server = createServer(app);
         const wss = new WebSocketServer({
             noServer: true
