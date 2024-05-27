@@ -1,6 +1,6 @@
 import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {Request, Response} from "express";
-import {ChannelMember, Message, User} from "../database/models";
+import {Channel, ChannelMember, Message, User} from "../database/models";
 import {CLI} from "../../tooling/CLI";
 import {PermissionsList} from "../../enums/permissionsList";
 import {SafeUser, safeUser} from "../authentication/actions";
@@ -200,7 +200,7 @@ export class MessagingEndpoints {
                 res.json([]);
                 return;
             }
-            for (const channel of channels) {
+            for (const channel of channels as UiChannel[]) {
                 if (channel.type === "dm") {
                     const members = await db.getChannelMembers(channel.id);
                     if (members) {
@@ -212,6 +212,7 @@ export class MessagingEndpoints {
                                 }
                             }
                         }
+                        channel.members = members;
                     }
                 }
             }
@@ -222,4 +223,8 @@ export class MessagingEndpoints {
 
 export interface ReceivableMessage extends Message {
     sender: SafeUser;
+}
+
+export interface UiChannel extends Channel {
+    members: ChannelMember[];
 }
