@@ -6,7 +6,8 @@ import {Message, User} from "./database/models";
 import {Application} from "express";
 import {createServer} from "http";
 import {UserWebSocket} from "./live/UserWebSocket";
-import {safeUser, SafeUser} from "./authentication/actions";
+import {safeUser} from "./authentication/actions";
+import {PermissionsList} from "../enums/permissionsList";
 
 export class LiveFeature {
     static enable(app: Application, userMap: Map<string, User>, db: MariaDbDatabase) {
@@ -39,9 +40,13 @@ export class LiveFeature {
 
             ws.on("message", async (message: any) => {
                 const data = JSON.parse(message.toString());
+                CLI.debug("Received message: " + JSON.stringify(data, null, 2));
                 switch (data.type) {
                     case "message":
                         await LiveFeature.sendMessage(data, ws.user, clients, ws, db);
+                        break;
+                    case "removeMessage":
+                        await LiveFeature.removeMessage(data, ws.user, clients, ws, db);
                         break;
                 }
             });
@@ -69,7 +74,7 @@ export class LiveFeature {
                     return;
                 }
                 CLI.success(`User ${user.id} connected to websocket.`);
-                wss.handleUpgrade(req, socket, head, function done(ws) {
+                wss.handleUpgrade(req, socket, head, function done(ws: any) {
                     wss.emit('connection', ws, { user });
                 });
             } else {
@@ -103,12 +108,12 @@ export class LiveFeature {
             return;
         }
 
+        await db.createMessage(channelId, user.id, text);
+        const message = await db.getLastMessageForChannel(channelId);
+        message.sender = safeUser(user);
+
         for (const ws of clients) {
             if (ws.readyState !== ws.OPEN) {
-                continue;
-            }
-
-            if (ws.user.id === user.id) {
                 continue;
             }
 
@@ -119,16 +124,58 @@ export class LiveFeature {
             CLI.debug(`Sending message to ${ws.user.id}`);
             ws.send(JSON.stringify({
                 type: "message",
-                message: <Message>{
-                    text,
-                    channelId,
-                    sender: safeUser(user),
-                    id: 0,
-                    senderId: user.id,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    parentMessageId: null,
-                }
+                message
+            }));
+        }
+    }
+
+    private static async removeMessage(data: any, user: User, clients: Set<UserWebSocket>, client: UserWebSocket, db: MariaDbDatabase) {
+        const messageId = data.messageId;
+        if (!messageId) {
+            client.send(JSON.stringify({error: "Message ID is required"}));
+            return;
+        }
+
+        const message = await db.getMessageById(messageId);
+        if (!message) {
+            client.send(JSON.stringify({error: "Message not found"}));
+            return;
+        }
+
+        if (message.senderId !== user.id) {
+            const selfPermissions = await db.getUserPermissions(user.id);
+            if (!selfPermissions || !selfPermissions.some(p => p.name === PermissionsList.deleteMessage.name)) {
+                client.send(JSON.stringify({error: "You do not have permission to delete this message"}));
+                return;
+            }
+        }
+
+        const invalid = await MessagingEndpoints.checkChannelAccess(db, user, message.channelId);
+        if (invalid !== null) {
+            client.send(JSON.stringify({error: invalid}));
+            return;
+        }
+
+        await db.deleteMessage(messageId);
+
+        for (const ws of clients) {
+            if (ws.readyState !== ws.OPEN) {
+                continue;
+            }
+
+            if (ws.user.id === user.id) {
+                continue;
+            }
+
+            const invalid = await MessagingEndpoints.checkChannelAccess(db, ws.user, message.channelId);
+            if (invalid !== null) {
+                continue;
+            }
+            CLI.debug(`Removing message from ${ws.user.id}`);
+            ws.send(JSON.stringify({
+                type: "removeMessage",
+                channelId: message.channelId,
+                messageId
             }));
         }
     }
