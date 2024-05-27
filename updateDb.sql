@@ -14,10 +14,13 @@ create table if not exists venel.channels
 (
     id               bigint auto_increment
         primary key,
-    bridged          tinyint(1) default 0 not null,
-    bridgeInstanceId bigint               null,
-    bridgedChannelId bigint               null,
-    name             varchar(255)         null,
+    type             varchar(2)                             not null,
+    bridged          tinyint(1) default 0                   not null,
+    bridgeInstanceId bigint                                 null,
+    bridgedChannelId bigint                                 null,
+    name             varchar(255)                           null,
+    createdAt        datetime   default current_timestamp() not null,
+    updatedAt        datetime   default current_timestamp() not null on update current_timestamp(),
     constraint channels_bridgeInstances_id_fk
         foreign key (bridgeInstanceId) references venel.bridgeInstances (id)
 );

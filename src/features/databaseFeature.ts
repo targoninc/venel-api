@@ -45,8 +45,10 @@ export class DatabaseFeature {
         for (const role of roles) {
             await db.createRole(role.name, role.description);
             for (const permission of role.permissions) {
-                await db.query(`INSERT INTO rolePermissions (roleId, permissionId) VALUES 
-((SELECT id FROM roles WHERE name = ?), (SELECT id FROM permissions WHERE name = ?)) ON DUPLICATE KEY UPDATE roleId = roleId`,
+                await db.query(`INSERT INTO venel.rolePermissions (roleId, permissionId)
+                                VALUES ((SELECT id FROM venel.roles WHERE name = ?),
+                                        (SELECT id FROM venel.permissions WHERE name = ?))
+                                ON DUPLICATE KEY UPDATE roleId = roleId`,
                     [role.name, permission.name]);
             }
         }

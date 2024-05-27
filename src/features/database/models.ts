@@ -30,8 +30,11 @@ export interface Channel {
   'bridged': boolean;
   'bridgedChannelId': Id | null;
   'bridgeInstanceId': Id | null;
+  'createdAt': Date;
   'id': Id;
   'name': string | null;
+  'type': string;
+  'updatedAt': Date;
 }
 
 export interface ImageAttachment {

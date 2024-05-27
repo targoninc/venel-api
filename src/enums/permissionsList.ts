@@ -64,4 +64,12 @@ export const PermissionsList: Record<string, Permission> = {
         name: "getUserPermissions",
         description: "Can get the permissions of another user."
     },
+    deleteMessage: {
+        name: "deleteMessage",
+        description: "Can delete a message."
+    },
+    deleteChannel: {
+        name: "deleteChannel",
+        description: "Can delete a channel."
+    },
 }

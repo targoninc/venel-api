@@ -8,7 +8,135 @@ export const swaggerOptions = {
         },
         openapi: "3.1.0",
         paths: {
-            "/api/getUser": {
+            "/api/auth/logout": {
+                post: {
+                    summary: "Logout a user",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Logout a user",
+                    responses: {
+                        200: {
+                            description: "User logged out successfully"
+                        },
+                        401: {
+                            description: "Unauthorized"
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
+            "/api/auth/authorize": {
+                post: {
+                    summary: "Authorize User",
+                    description: "Authorize a user with username and password",
+                    operationId: "authorizeUser",
+                    tags: [
+                        "User Management"
+                    ],
+                    requestBody: {
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        username: {
+                                            type: "string",
+                                            description: "Username of the User",
+                                            example: "myusername"
+                                        },
+                                        password: {
+                                            type: "string",
+                                            description: "Password for the User",
+                                            example: "testpassword1234"
+                                        }
+                                    },
+                                    required: [
+                                        "username",
+                                        "password"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "User successfully authorized",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            user: {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        default: {
+                            description: "Error",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            error: {
+                                                type: "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/api/auth/register": {
+                post: {
+                    summary: "Register a new user",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Register a user",
+                    requestBody: {
+                        description: "User's entity",
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    required: [
+                                        "username",
+                                        "password"
+                                    ],
+                                    properties: {
+                                        username: {
+                                            type: "string",
+                                            minLength: 3,
+                                            maxLength: 255,
+                                            example: "myusername"
+                                        },
+                                        password: {
+                                            type: "string",
+                                            format: "password",
+                                            minLength: 16,
+                                            maxLength: 64,
+                                            example: "testpassword1234"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                }
+            },
+            "/api/auth/getUser": {
                 get: {
                     summary: "Get the user object for the currently authenticated user",
                     tags: [
@@ -30,131 +158,45 @@ export const swaggerOptions = {
                     ]
                 }
             },
-            "/api/authorize": {
-                post: {
-                    summary: "Authorize a user",
-                    tags: [
-                        "User Management"
-                    ],
-                    description: "Authorize a user",
-                    parameters: [
-                        {
-                            name: "user_info",
-                            in: "body",
-                            required: true,
-                            schema: {
-                                type: "object",
-                                required: [
-                                    "username",
-                                    "password"
-                                ],
-                                properties: {
-                                    username: {
-                                        type: "string",
-                                        minLength: 3,
-                                        maxLength: 255,
-                                        default: "myusername"
-                                    },
-                                    password: {
-                                        type: "string",
-                                        format: "password",
-                                        minLength: 16,
-                                        maxLength: 64,
-                                        default: "testpassword1234"
-                                    }
-                                }
-                            }
-                        }
-                    ],
-                    responses: {
-                        200: {
-                            description: "User authorized successfully"
-                        },
-                        401: {
-                            description: "Unauthorized"
-                        }
-                    }
-                }
-            },
-            "/api/register": {
-                post: {
-                    summary: "Register a new user",
-                    tags: [
-                        "User Management"
-                    ],
-                    description: "Register a user",
-                    parameters: [
-                        {
-                            name: "user_info",
-                            in: "body",
-                            required: true,
-                            schema: {
-                                type: "object",
-                                required: [
-                                    "username",
-                                    "password"
-                                ],
-                                properties: {
-                                    username: {
-                                        type: "string",
-                                        minLength: 3,
-                                        maxLength: 255,
-                                        default: "myusername"
-                                    },
-                                    password: {
-                                        type: "string",
-                                        format: "password",
-                                        minLength: 16,
-                                        maxLength: 64,
-                                        default: "testpassword1234"
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                }
-            },
-            "/api/updateUser": {
-                post: {
+            "/api/auth/updateUser": {
+                patch: {
                     summary: "Update user properties",
                     tags: [
                         "User Management"
                     ],
                     description: "Update a user",
-                    parameters: [
-                        {
-                            name: "user_info",
-                            in: "body",
-                            required: true,
-                            schema: {
-                                type: "object",
-                                properties: {
-                                    username: {
-                                        type: "string",
-                                        minLength: 3,
-                                        maxLength: 255,
-                                        default: "myusername",
-                                        description: "The new username",
-                                        required: false
-                                    },
-                                    displayname: {
-                                        type: "string",
-                                        maxLength: 255,
-                                        default: "My Username",
-                                        description: "The new display name",
-                                        required: false
-                                    },
-                                    description: {
-                                        type: "string",
-                                        maxLength: 255,
-                                        default: "I am a user",
-                                        description: "The new description",
-                                        required: false
+                    requestBody: {
+                        description: "Properties to update",
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        username: {
+                                            type: "string",
+                                            minLength: 3,
+                                            maxLength: 255,
+                                            example: "myusername",
+                                            description: "The new username",
+                                        },
+                                        displayname: {
+                                            type: "string",
+                                            maxLength: 255,
+                                            example: "My Username",
+                                            description: "The new display name",
+                                        },
+                                        description: {
+                                            type: "string",
+                                            maxLength: 255,
+                                            example: "I am a user",
+                                            description: "The new description",
+                                        }
                                     }
                                 }
                             }
                         }
-                    ]
+                    }
                 },
                 security: [
                     {
@@ -162,7 +204,52 @@ export const swaggerOptions = {
                     }
                 ]
             },
-            "/api/roles": {
+            "/api/auth/deleteUser": {
+                delete: {
+                    summary: "Delete a user",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Delete a user",
+                    requestBody: {
+                        description: "User's entity",
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    required: [
+                                        "id"
+                                    ],
+                                    properties: {
+                                        userId: {
+                                            type: "integer",
+                                            description: "The ID of the user to delete"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "User deleted successfully"
+                        },
+                        401: {
+                            description: "Unauthorized"
+                        },
+                        403: {
+                            description: "You do not have permission to delete this user"
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
+            "/api/auth/roles": {
                 get: {
                     summary: "Get a list of roles",
                     tags: [
@@ -191,7 +278,7 @@ export const swaggerOptions = {
                     }
                 }
             },
-            "/api/createRole": {
+            "/api/auth/createRole": {
                 post: {
                     summary: "Create a new empty role",
                     tags: [
@@ -201,28 +288,29 @@ export const swaggerOptions = {
                     produces: [
                         "application/json"
                     ],
-                    parameters: [
-                        {
-                            name: "body",
-                            description: "Role's entity",
-                            in: "body",
-                            required: true,
-                            schema: {
-                                type: "object",
-                                required: [
-                                    "name"
-                                ],
-                                properties: {
-                                    name: {
-                                        type: "string"
-                                    },
-                                    description: {
-                                        type: "string"
+                    requestBody: {
+                        description: "Role's entity",
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    required: [
+                                        "name",
+                                        "description"
+                                    ],
+                                    properties: {
+                                        name: {
+                                            type: "string"
+                                        },
+                                        description: {
+                                            type: "string"
+                                        }
                                     }
                                 }
                             }
                         }
-                    ],
+                    },
                     responses: {
                         200: {
                             description: "Role created successfully",
@@ -246,7 +334,7 @@ export const swaggerOptions = {
                                 }
                             }
                         },
-                        default: {
+                        400: {
                             description: "Name is required",
                             schema: {
                                 type: "object",
@@ -265,29 +353,38 @@ export const swaggerOptions = {
                     ]
                 }
             },
-            "/api/addPermissionToRole": {
+            "/api/auth/addPermissionToRole": {
                 post: {
                     summary: "Grants a permission to a role and thus implicitly to all users with that role",
                     tags: [
                         "Permission Management"
                     ],
                     description: "Grants a permission to a role",
-                    parameters: [
-                        {
-                            name: "roleId",
-                            description: "The ID of the role that will be granted the permission",
-                            in: "body",
-                            required: true,
-                            type: "integer"
-                        },
-                        {
-                            name: "permissionId",
-                            description: "The ID of the permission that will be granted to the role",
-                            in: "body",
-                            required: true,
-                            type: "integer"
+                    requestBody: {
+                        description: "Role's entity",
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    required: [
+                                        "roleId",
+                                        "permissionId"
+                                    ],
+                                    properties: {
+                                        roleId: {
+                                            type: "integer",
+                                            description: "The ID of the role to add the permission to"
+                                        },
+                                        permissionId: {
+                                            type: "integer",
+                                            description: "The ID of the permission to add to the role"
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    ],
+                    },
                     responses: {
                         200: {
                             description: "Permission added to the role successfully"
@@ -306,7 +403,7 @@ export const swaggerOptions = {
                     ]
                 }
             },
-            "/api/permissions": {
+            "/api/auth/permissions": {
                 get: {
                     summary: "Get all permissions",
                     tags: [
@@ -349,7 +446,7 @@ export const swaggerOptions = {
                     }
                 }
             },
-            "/api/getUserRoles": {
+            "/api/auth/getUserRoles": {
                 get: {
                     summary: "Get a list of all roles for a given user",
                     tags: [
@@ -363,7 +460,7 @@ export const swaggerOptions = {
                             required: true,
                             schema: {
                                 type: "string",
-                                default: 1,
+                                example: 1,
                                 description: "The id of the user"
                             }
                         }
@@ -390,7 +487,7 @@ export const swaggerOptions = {
                     }
                 }
             },
-            "/api/getUserPermissions": {
+            "/api/auth/getUserPermissions": {
                 get: {
                     summary: "Get a list of all permissions for a given user",
                     tags: [
@@ -404,7 +501,7 @@ export const swaggerOptions = {
                             required: true,
                             schema: {
                                 type: "string",
-                                default: 1,
+                                example: 1,
                                 description: "The id of the user"
                             }
                         }
@@ -436,11 +533,11 @@ export const swaggerOptions = {
                     ]
                 }
             },
-            "/api/addRoleToUser": {
+            "/api/auth/addRoleToUser": {
                 post: {
                     summary: "Adds a role to a user",
                     tags: [
-                        "User Management"
+                        "Permission Management"
                     ],
                     requestBody: {
                         required: true,
@@ -521,6 +618,444 @@ export const swaggerOptions = {
                             cookieAuth: []
                         }
                     ]
+                }
+            },
+            "/api/auth/removeRoleFromUser": {
+                delete: {
+                    summary: "Removes a role from a user",
+                    tags: [
+                        "Permission Management"
+                    ],
+                    requestBody: {
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        userId: {
+                                            type: "number",
+                                            description: "The user ID for whom a role should be removed"
+                                        },
+                                        roleId: {
+                                            type: "number",
+                                            description: "The role ID to be removed from the user"
+                                        }
+                                    },
+                                    required: [
+                                        "userId",
+                                        "roleId"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Role removed from user successfully",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            message: {
+                                                type: "string",
+                                                example: "Role removed from user successfully"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        400: {
+                            description: "userId and roleId are required",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            error: {
+                                                type: "string",
+                                                example: "userId and roleId are required"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        403: {
+                            description: "You do not have permission to remove a role from a user",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            error: {
+                                                type: "string",
+                                                example: "You do not have permission to remove a role from a user"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
+            "/api/messaging/sendMessage": {
+                post: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Send a message to a channel",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Send a message to a channel",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        channelId: {
+                                            type: "integer",
+                                            description: "The ID of the channel to send the message to"
+                                        },
+                                        text: {
+                                            type: "string",
+                                            description: "The text of the message"
+                                        }
+                                    },
+                                    required: ["channelId", "text"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Message sent successfully"
+                        },
+                        400: {
+                            description: "Bad Request: Channel ID and/or text are required"
+                        },
+                        404: {
+                            description: "Not Found: Channel not found"
+                        }
+                    }
+                }
+            },
+            "/api/messaging/deleteMessage": {
+                delete: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Delete a message",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Delete a message",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        messageId: {
+                                            type: "integer",
+                                            description: "The ID of the message to delete"
+                                        }
+                                    },
+                                    required: ["messageId"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Message deleted successfully"
+                        },
+                        400: {
+                            description: "Bad Request: Message ID is required"
+                        },
+                        404: {
+                            description: "Not Found: Message not found"
+                        }
+                    }
+                }
+            },
+            "/api/messaging/editMessage": {
+                patch: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Edit a message",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Edit a message",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        messageId: {
+                                            type: "integer",
+                                            description: "The ID of the message to edit"
+                                        },
+                                        text: {
+                                            type: "string",
+                                            description: "The new text of the message"
+                                        }
+                                    },
+                                    required: ["messageId", "text"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Message edited successfully"
+                        },
+                        400: {
+                            description: "Bad Request: Message ID and/or text are required"
+                        },
+                        404: {
+                            description: "Not Found: Message not found"
+                        }
+                    }
+                }
+            },
+            "/api/channels/createDirect": {
+                post: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Create a direct message channel",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Create a direct message channel",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        targetUserId: {
+                                            type: "integer",
+                                            description: "The ID of the user to create the channel with"
+                                        }
+                                    },
+                                    required: ["targetUserId"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Channel created successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            channelId: {
+                                                type: "integer",
+                                                description: "The ID of the created channel"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        400: {
+                            description: "Bad Request: Target User ID is required"
+                        },
+                        404: {
+                            description: "Not Found: Target User not found"
+                        }
+                    }
+                }
+            },
+            "/api/channels/getMessages": {
+                get: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Get messages for a channel",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Get messages for a channel",
+                    parameters: [
+                        {
+                            name: "channelId",
+                            in: "query",
+                            description: "The ID of the channel to get messages for",
+                            required: true,
+                            schema: {
+                                type: "integer"
+                            }
+                        },
+                        {
+                            name: "offset",
+                            in: "query",
+                            description: "The offset to start from",
+                            schema: {
+                                type: "integer"
+                            }
+                        }
+                    ],
+                    responses: {
+                        200: {
+                            description: "Messages retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "array",
+                                        items: {
+                                            type: "object"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        400: {
+                            description: "Bad Request: Channel ID is required"
+                        }
+                    }
+                }
+            },
+            "/api/channels/getChannels": {
+                get: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Get channels for a user",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Get channels for a user",
+                    responses: {
+                        200: {
+                            description: "Channels retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "array",
+                                        items: {
+                                            type: "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/api/auth/getConnectionSid": {
+                get: {
+                    summary: "Get the connection SID of the current user",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Get the connection SID of the current user",
+                    responses: {
+                        200: {
+                            description: "Connection SID retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            connectionSid: {
+                                                type: "string",
+                                                description: "The connection SID of the current user"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        401: {
+                            description: "Unauthorized"
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
+            "/api/live/url": {
+                get: {
+                    summary: "Get the websocket URL",
+                    tags: [
+                        "Live"
+                    ],
+                    description: "Get the websocket URL",
+                    responses: {
+                        200: {
+                            description: "Websocket URL retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            url: {
+                                                type: "string",
+                                                description: "The websocket URL"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        },
+        components: {
+            schemas: {
+                User: {
+                    type: "object",
+                    properties: {
+                        archived: {type: "boolean"},
+                        createdAt: {type: "string", format: "date-time"},
+                        description: {type: "string"},
+                        displayname: {type: "string"},
+                        id: {type: "string"},
+                        lastLoginIp: {type: "string"},
+                        passwordHash: {type: "string"},
+                        phoneNumber: {type: "string"},
+                        registrationIp: {type: "string"},
+                        updatedAt: {type: "string", format: "date-time"},
+                        username: {type: "string"}
+                    }
                 }
             }
         }

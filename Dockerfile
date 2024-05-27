@@ -15,6 +15,7 @@ RUN npm run build:main
 
 # Make the app's ports available to the outside world
 EXPOSE 3000
+EXPOSE 8912
 
 # Define the command to run the app
 CMD ["npm", "run", "start"]

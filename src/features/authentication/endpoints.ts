@@ -1,6 +1,6 @@
 import passport from "passport";
 import {CLI} from "../../tooling/CLI";
-import {AuthActions, safeUser} from "./actions";
+import {AuthActions, SafeUser, safeUser} from "./actions";
 import {IP} from "../../tooling/IP";
 import {PermissionsList} from "../../enums/permissionsList";
 import {Request, Response} from "express";
@@ -35,14 +35,14 @@ export class AuthEndpoints {
         async function authUser(req: Request, res: Response, next: Function): Promise<void> {
             const cleanUsername = req.body.username.toLowerCase();
             if (cleanUsername.length < 3) {
+                res.status(400);
                 res.send({error: "Username must be at least 3 characters long"});
-
                 return;
             }
             const existing = await db.getUserByUsername(cleanUsername);
             if (!existing) {
+                res.status(404);
                 res.send({error: "This username does not exist on this instance"});
-
                 return;
             }
 
@@ -57,6 +57,7 @@ export class AuthEndpoints {
                     return next(err);
                 }
                 if (!user) {
+                    res.status(401);
                     res.send({error: "Invalid username or password"});
                     return;
                 }
@@ -73,12 +74,7 @@ export class AuthEndpoints {
                 return next(err);
             }
 
-            const outUser = <User & {
-                justRegistered?: boolean;
-            }>{
-                id: user.id,
-                username: user.username,
-            };
+            const outUser = <SafeUser & { justRegistered?: boolean; }>safeUser(user);
             if (!existing) {
                 outUser.justRegistered = true;
             }
@@ -89,15 +85,23 @@ export class AuthEndpoints {
         }
     }
 
-    static registerUser(db: MariaDbDatabase): (arg0: Request, arg1: Response, arg2: Function) => Promise<void> {
-        return async (req: Request, res: Response, next: Function) => {
-            const cleanUsername = req.body.username.toLowerCase();
+    static registerUser(db: MariaDbDatabase): (arg0: any, arg1: any, arg2: Function) => Promise<void> {
+        return async (req: any, res: any, next: Function) => {
+            let cleanUsername = req.body.username;
+            if (!cleanUsername) {
+                res.status(400);
+                res.send({error: "Username is required"});
+                return;
+            }
             if (cleanUsername.length < 3) {
+                res.status(400);
                 res.send({error: "Username must be at least 3 characters long"});
                 return;
             }
+            cleanUsername = cleanUsername.toLowerCase();
             const existing = await db.getUserByUsername(cleanUsername);
             if (existing) {
+                res.status(400);
                 res.send({error: "Username already exists on this instance"});
                 return;
             }
@@ -105,18 +109,35 @@ export class AuthEndpoints {
             const passwordMinLength = 16;
             const passwordMaxLength = 64;
             const passwordMustContainNumbers = true;
-            if (req.body.password < passwordMinLength) {
+            const password = req.body.password;
+            if (!password) {
+                res.status(400);
+                res.send({error: "Password is required"});
+                return;
+            }
+            if (password.length < passwordMinLength) {
+                res.status(400);
                 res.send({error: `Password must be at least ${passwordMinLength} characters long`});
                 return;
             }
-            if (req.body.password > passwordMaxLength) {
+            if (password.length > passwordMaxLength) {
+                res.status(400);
                 res.send({error: `Password must be at most ${passwordMaxLength} characters long`});
                 return;
             }
-            if (passwordMustContainNumbers && !/\d/.test(req.body.password)) {
+            if (passwordMustContainNumbers && !/\d/.test(password)) {
+                res.status(400);
                 res.send({error: "Password must contain at least one number"});
                 return;
             }
+
+            const users = await db.getUsers();
+            if (users && users.length > 0 && process.env.ALLOW_FREE_REGISTRATION !== "true") {
+                res.status(403);
+                res.send({error: "This instance does not allow free registration"});
+                return;
+            }
+            CLI.info(`Registering user ${cleanUsername}`);
             await AuthActions.registerUser(req, db, cleanUsername, req.body.password);
 
             passport.authenticate("local", async (err: any, user: User) => {
@@ -192,6 +213,10 @@ export class AuthEndpoints {
             const {name, description} = req.body;
             if (!name) {
                 res.send({error: "Name is required"});
+                return;
+            }
+            if (!description) {
+                res.send({error: "Description is required"});
                 return;
             }
             await db.createRole(name, description);
@@ -303,6 +328,61 @@ export class AuthEndpoints {
 
             await db.createUserRole(parseInt(userId), parseInt(roleId));
             res.send({message: "Role added to user successfully"});
+        }
+    }
+
+    static removeRoleFromUser(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const {userId, roleId} = req.body;
+            if (!userId || !roleId) {
+                res.status(400);
+                res.send({error: "userId and roleId are required"});
+                return;
+            }
+
+            const user = req.user as User;
+            const selfPermissions = await db.getUserPermissions(user.id);
+            if (!selfPermissions || !selfPermissions.some(p => p.name === PermissionsList.removeUserFromRole.name)) {
+                res.status(403);
+                res.send({error: "You do not have permission to remove a role from a user"});
+                return;
+            }
+
+            await db.deleteUserRole(parseInt(userId), parseInt(roleId));
+            res.send({message: "Role removed from user successfully"});
+        }
+    }
+
+    static deleteUser(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+            const {userId} = req.body;
+            if (!userId) {
+                res.send({error: "userId is required"});
+                return;
+            }
+
+            if (user.id !== parseInt(userId)) {
+                const selfPermissions = await db.getUserPermissions(user.id);
+                if (!selfPermissions || !selfPermissions.some(p => p.name === PermissionsList.deleteUser.name)) {
+                    res.status(403);
+                    res.send({error: "You do not have permission to delete this user"});
+                    return;
+                }
+            }
+
+            await db.deleteUser(parseInt(userId));
+            res.send({message: "User deleted successfully"});
+        }
+    }
+
+    static getConnectionSid() {
+        return (req: Request, res: Response) => {
+            let connectSid = req.headers.cookie?.split(';').find((c: string) => c.trim().startsWith('connect.sid='));
+            if (connectSid) {
+                connectSid = connectSid.split('=')[1];
+            }
+            res.send({connectSid});
         }
     }
 }

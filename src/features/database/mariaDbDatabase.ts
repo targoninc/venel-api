@@ -1,6 +1,6 @@
 import mariadb from 'mariadb';
 import {CLI} from "../../tooling/CLI";
-import {Permission, Role, User} from "./models";
+import {Channel, ChannelMember, Id, Message, Permission, Role, User} from "./models";
 
 export class MariaDbDatabase {
     private readonly host: string;
@@ -62,7 +62,7 @@ export class MariaDbDatabase {
         return rows ? rows[0] : null;
     }
 
-    async getUserById(id: number): Promise<User | null> {
+    async getUserById(id: Id): Promise<User | null> {
         const rows = await this.query("SELECT * FROM venel.users WHERE id = ?", [id]);
         return rows ? rows[0] : null;
     }
@@ -71,19 +71,19 @@ export class MariaDbDatabase {
         await this.query("INSERT INTO venel.users (username, passwordHash, registrationIp) VALUES (?, ?, ?)", [username, hashedPassword, ip]);
     }
 
-    async updateUserIp(id: number, ip: string): Promise<void> {
+    async updateUserIp(id: Id, ip: string): Promise<void> {
         await this.query("UPDATE venel.users SET lastLoginIp = ? WHERE id = ?", [ip, id]);
     }
 
-    async updateUserUsername(id: number, username: string): Promise<void> {
+    async updateUserUsername(id: Id, username: string): Promise<void> {
         await this.query("UPDATE venel.users SET username = ? WHERE id = ?", [username, id]);
     }
 
-    async updateUserDisplayname(id: number, displayname: string): Promise<void> {
+    async updateUserDisplayname(id: Id, displayname: string): Promise<void> {
         await this.query("UPDATE venel.users SET displayname = ? WHERE id = ?", [displayname, id]);
     }
 
-    async updateUserDescription(id: number, description: string): Promise<void> {
+    async updateUserDescription(id: Id, description: string): Promise<void> {
         await this.query("UPDATE venel.users SET description = ? WHERE id = ?", [description, id]);
     }
 
@@ -95,11 +95,11 @@ export class MariaDbDatabase {
         await this.query("INSERT INTO venel.permissions (name, description) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = name", [name, description]);
     }
 
-    async createRolePermission(roleId: number, permissionId: number) {
+    async createRolePermission(roleId: Id, permissionId: Id) {
         await this.query("INSERT INTO venel.rolePermissions (roleId, permissionId) VALUES (?, ?) ON DUPLICATE KEY UPDATE roleId = roleId", [roleId, permissionId]);
     }
 
-    async createUserRole(userId: number, roleId: number) {
+    async createUserRole(userId: Id, roleId: Id) {
         await this.query("INSERT INTO venel.userRoles (userId, roleId) VALUES (?, ?) ON DUPLICATE KEY UPDATE userId = userId", [userId, roleId]);
     }
 
@@ -108,7 +108,7 @@ export class MariaDbDatabase {
         return rows ? rows[0] : null;
     }
 
-    async deleteUserRole(userId: number, roleId: number) {
+    async deleteUserRole(userId: Id, roleId: Id) {
         await this.query("DELETE FROM venel.userRoles WHERE userId = ? AND roleId = ?", [userId, roleId]);
     }
 
@@ -120,18 +120,77 @@ export class MariaDbDatabase {
         return await this.query("SELECT * FROM venel.roles");
     }
 
-    async getUserRoles(userId: number): Promise<Role[] | undefined> {
+    async getUserRoles(userId: Id): Promise<Role[] | undefined> {
         return await this.query("SELECT r.id, r.name, r.description FROM venel.roles r INNER JOIN venel.userRoles ur ON r.id = ur.roleId WHERE ur.userId = ?", [userId]);
     }
 
-    async getRolePermissions(roleId: number): Promise<Permission[] | undefined> {
+    async getRolePermissions(roleId: Id): Promise<Permission[] | undefined> {
         return await this.query(`SELECT * FROM venel.permissions INNER JOIN venel.rolePermissions ON 
 permissions.id = rolePermissions.permissionId WHERE rolePermissions.roleId = ?`, [roleId]);
     }
 
-    async getUserPermissions(userId: number): Promise<Permission[] | undefined> {
+    async getUserPermissions(userId: Id): Promise<Permission[] | undefined> {
         return await this.query(`SELECT p.id, p.name, p.description FROM venel.permissions p INNER JOIN venel.rolePermissions rp ON 
 p.id = rp.permissionId INNER JOIN venel.userRoles ur ON rp.roleId = ur.roleId 
 WHERE ur.userId = ?`, [userId]);
+    }
+
+    async createMessage(channelId: Id, senderId: Id, text: string) {
+        await this.query("INSERT INTO venel.messages (channelId, senderId, text) VALUES (?, ?, ?)", [channelId, senderId, text]);
+    }
+
+    async getChannelById(channelId: Id): Promise<Channel | null> {
+        const rows = await this.query("SELECT * FROM venel.channels WHERE id = ?", [channelId]);
+        return rows ? rows[0] : null;
+    }
+
+    async getMessagesForChannel(channelId: Id, offset: number): Promise<Message[] | null> {
+        return await this.query("SELECT * FROM venel.messages m WHERE channelId = ? ORDER BY createdAt DESC LIMIT 100 OFFSET ?", [channelId, offset]);
+    }
+
+    async deleteUser(id: Id) {
+        await this.query("DELETE FROM venel.users WHERE id = ?", [id]);
+    }
+
+    async createChannelDm(id: Id, targetUserId: Id) {
+        const timestamp = new Date().toISOString();
+        await this.query("INSERT INTO venel.channels (type, name) VALUES ('dm', ?)", [timestamp + " (DM)"]);
+        const rows = await this.query("SELECT id FROM venel.channels WHERE name = ?", [timestamp + " (DM)"]);
+        const channelId = rows ? rows[0].id : null;
+        if (!channelId) {
+            throw new Error("Could not create channel");
+        }
+
+        await this.query("INSERT INTO venel.channelMembers (channelId, userId) VALUES (?, ?), (?, ?)", [
+            channelId, id,
+            channelId, targetUserId
+        ]);
+        return channelId;
+    }
+
+    async getChannelMembers(channelId: Id): Promise<ChannelMember[] | null> {
+        return await this.query("SELECT * FROM venel.channelMembers WHERE channelId = ?", [channelId]);
+    }
+
+    async getMessageById(messageId: Id): Promise<Message | null> {
+        const rows = await this.query("SELECT * FROM venel.messages WHERE id = ?", [messageId]);
+        return rows ? rows[0] : null;
+    }
+
+    async deleteMessage(messageId: Id) {
+        await this.query("DELETE FROM venel.messages WHERE id = ?", [messageId]);
+    }
+
+    async editMessage(messageId: Id, text: string) {
+        await this.query("UPDATE venel.messages SET text = ? WHERE id = ?", [text, messageId]);
+    }
+
+    async getChannelsForUser(id: Id): Promise<Channel[] | null> {
+        return await this.query("SELECT c.id, c.type, c.name, c.createdAt, c.updatedAt FROM venel.channels c INNER JOIN venel.channelMembers cm ON c.id = cm.channelId WHERE cm.userId = ?", [id]);
+    }
+
+    async getLastMessageForChannel(channelId: Id) {
+        const rows = await this.query("SELECT * FROM venel.messages WHERE channelId = ? ORDER BY createdAt DESC LIMIT 1", [channelId]);
+        return rows ? rows[0] : null;
     }
 }
