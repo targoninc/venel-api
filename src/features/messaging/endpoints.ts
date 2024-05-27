@@ -196,6 +196,25 @@ export class MessagingEndpoints {
             const user = req.user as User;
 
             const channels = await db.getChannelsForUser(user.id);
+            if (!channels) {
+                res.json([]);
+                return;
+            }
+            for (const channel of channels) {
+                if (channel.type === "dm") {
+                    const members = await db.getChannelMembers(channel.id);
+                    if (members) {
+                        for (const member of members) {
+                            if (member.userId !== user.id) {
+                                const targetUser = await db.getUserById(member.userId);
+                                if (targetUser) {
+                                    channel.name = targetUser.displayname ?? targetUser.username;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             res.json(channels);
         }
     }
