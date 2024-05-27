@@ -12,6 +12,9 @@ MYSQL_DATABASE=venel
 MYSQL_USER=myuser
 MYSQL_PASSWORD=mypassword
 SESSION_SECRET=mysecret
+ALLOW_FREE_REGISTRATION=true
+UI_DEPLOYMENT_URL=http://localhost:3001
+WEBSOCKET_URL=ws://127.0.0.1:8912
 ```
 
 ## Windows
