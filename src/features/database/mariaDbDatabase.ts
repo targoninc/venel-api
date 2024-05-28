@@ -161,15 +161,23 @@ WHERE ur.userId = ?`, [userId]);
             throw new Error("Could not create channel");
         }
 
-        await this.query("INSERT INTO venel.channelMembers (channelId, userId) VALUES (?, ?), (?, ?)", [
-            channelId, id,
-            channelId, targetUserId
-        ]);
+        if (id !== targetUserId) {
+            await this.query("INSERT INTO venel.channelMembers (channelId, userId) VALUES (?, ?), (?, ?)", [
+                channelId, id,
+                channelId, targetUserId
+            ]);
+        } else {
+            await this.query("INSERT INTO venel.channelMembers (channelId, userId) VALUES (?, ?)", [channelId, id]);
+        }
         return channelId;
     }
 
     async getChannelMembers(channelId: Id): Promise<ChannelMember[] | null> {
         return await this.query("SELECT * FROM venel.channelMembers WHERE channelId = ?", [channelId]);
+    }
+
+    async getChannelMembersAsUsers(channelId: Id): Promise<User[] | null> {
+        return await this.query("SELECT u.id, u.updatedAt, u.createdAt, u.username, u.displayname, u.description FROM venel.users u INNER JOIN venel.channelMembers cm ON u.id = cm.userId WHERE cm.channelId = ?", [channelId]);
     }
 
     async getMessageById(messageId: Id): Promise<Message | null> {
@@ -189,8 +197,12 @@ WHERE ur.userId = ?`, [userId]);
         return await this.query("SELECT c.id, c.type, c.name, c.createdAt, c.updatedAt FROM venel.channels c INNER JOIN venel.channelMembers cm ON c.id = cm.channelId WHERE cm.userId = ?", [id]);
     }
 
-    async getLastMessageForChannel(channelId: Id) {
+    async getLastMessageForChannel(channelId: Id): Promise<Message | null> {
         const rows = await this.query("SELECT * FROM venel.messages WHERE channelId = ? ORDER BY createdAt DESC LIMIT 1", [channelId]);
         return rows ? rows[0] : null;
+    }
+
+    async searchUsers(query: string): Promise<User[] | null> {
+        return await this.query("SELECT * FROM venel.users WHERE username LIKE ? OR displayname LIKE ?", [`%${query}%`, `%${query}%`]);
     }
 }

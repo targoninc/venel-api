@@ -1038,6 +1038,50 @@ export const swaggerOptions = {
                     }
                 }
             },
+            "/api/users/search": {
+                get: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Search for users",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Search for users",
+                    parameters: [
+                        {
+                            name: "query",
+                            in: "query",
+                            description: "The search query",
+                            required: true,
+                            schema: {
+                                type: "string"
+                            }
+                        }
+                    ],
+                    responses: {
+                        200: {
+                            description: "Users found",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "array",
+                                        items: {
+                                            type: "object",
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        400: {
+                            description: "Bad Request: Query is required"
+                        }
+                    }
+                }
+            }
         },
         components: {
             schemas: {

@@ -1,9 +1,11 @@
 import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {Request, Response} from "express";
-import {Channel, ChannelMember, Message, User} from "../database/models";
+import {ChannelMember, User} from "../database/models";
 import {CLI} from "../../tooling/CLI";
 import {PermissionsList} from "../../enums/permissionsList";
-import {SafeUser, safeUser} from "../authentication/actions";
+import {safeUser} from "../authentication/actions";
+import {ReceivableMessage} from "../../models/receivableMessage";
+import {UiChannel} from "../../models/uiChannel";
 
 export class MessagingEndpoints {
     static async checkChannelAccess(db: MariaDbDatabase, user: User, channelId: number) {
@@ -48,7 +50,11 @@ export class MessagingEndpoints {
                 return;
             }
             await db.createMessage(channelId, user.id, text);
-            const message = await db.getLastMessageForChannel(channelId);
+            const message = await db.getLastMessageForChannel(channelId) as ReceivableMessage | null;
+            if (!message) {
+                res.status(500).send("Message not found");
+                return;
+            }
             message.sender = safeUser(user);
             CLI.success(`Message sent to channel ${channelId} by user ${user.id}.`);
             res.json(message);
@@ -202,15 +208,16 @@ export class MessagingEndpoints {
             }
             for (const channel of channels as UiChannel[]) {
                 if (channel.type === "dm") {
-                    const members = await db.getChannelMembers(channel.id);
+                    const previousName = channel.name;
+                    const members = await db.getChannelMembersAsUsers(channel.id);
                     if (members) {
                         for (const member of members) {
-                            if (member.userId !== user.id) {
-                                const targetUser = await db.getUserById(member.userId);
-                                if (targetUser) {
-                                    channel.name = targetUser.displayname ?? targetUser.username;
-                                }
+                            if (member.id !== user.id) {
+                                channel.name = member.displayname ?? member.username;
                             }
+                        }
+                        if (channel.name === previousName) {
+                            channel.name = "Note to self";
                         }
                         channel.members = members;
                     }
@@ -219,12 +226,23 @@ export class MessagingEndpoints {
             res.json(channels);
         }
     }
+
+    static searchUsers(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const query = req.query.query as string;
+            if (!query) {
+                res.status(400).send("Query is required");
+                return;
+            }
+
+            const users = await db.searchUsers(query);
+            if (!users) {
+                res.json([]);
+                return;
+            }
+            res.json(users.map(u => safeUser(u)));
+        }
+
+    }
 }
 
-export interface ReceivableMessage extends Message {
-    sender: SafeUser;
-}
-
-export interface UiChannel extends Channel {
-    members: ChannelMember[];
-}

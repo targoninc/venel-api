@@ -11,6 +11,10 @@ export class MessagingFeature {
         app.delete(`${mPrefix}/deleteMessage`, AuthActions.checkAuthenticated, MessagingEndpoints.deleteMessage(db));
         app.patch(`${mPrefix}/editMessage`, AuthActions.checkAuthenticated, MessagingEndpoints.editMessage(db));
 
+        // Users
+        const uPrefix = "/api/users";
+        app.get(`${uPrefix}/search`, AuthActions.checkAuthenticated, MessagingEndpoints.searchUsers(db));
+
         // Channels
         const cPrefix = "/api/channels";
         app.post(`${cPrefix}/createDirect`, AuthActions.checkAuthenticated, MessagingEndpoints.createChannelDm(db));
