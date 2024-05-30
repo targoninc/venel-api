@@ -1,5 +1,6 @@
 import {Channel} from "../features/database/models";
-import {SafeUser} from "../features/authentication/actions";
+
+import {SafeUser} from "./safeUser";
 
 export interface UiChannel extends Channel {
     members: SafeUser[];

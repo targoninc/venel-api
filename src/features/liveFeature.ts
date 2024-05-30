@@ -9,6 +9,7 @@ import {UserWebSocket} from "./live/UserWebSocket";
 import {safeUser} from "./authentication/actions";
 import {PermissionsList} from "../enums/permissionsList";
 import {LiveEndpoints} from "./live/endpoints";
+import {ReceivableMessage} from "../models/receivableMessage";
 
 export class LiveFeature {
     static enable(app: Application, userMap: Map<string, User>, db: MariaDbDatabase) {
@@ -50,6 +51,12 @@ export class LiveFeature {
                         break;
                     case "removeMessage":
                         await LiveFeature.removeMessage(data, ws.user, clients, ws, db);
+                        break;
+                    case "status":
+                        await LiveFeature.propagateStatus(data, ws.user, clients, ws);
+                        break;
+                    case "createChannelDm":
+                        await LiveFeature.createChannelDm(data, ws.user, clients, ws, db);
                         break;
                 }
             });
@@ -112,9 +119,18 @@ export class LiveFeature {
         }
 
         await db.createMessage(channelId, user.id, text);
-        const message = await db.getLastMessageForChannel(channelId);
+        const message = await db.getLastMessageForChannel(channelId) as ReceivableMessage | null;
+        if (!message) {
+            client.send(JSON.stringify({error: "Message not found"}));
+            return;
+        }
         message.sender = safeUser(user);
 
+        const payload = JSON.stringify({
+            type: "message",
+            message
+        });
+        CLI.debug(`Propagating message from ${user.id} to ${clients.size} clients.`);
         for (const ws of clients) {
             if (ws.readyState !== ws.OPEN) {
                 continue;
@@ -124,11 +140,7 @@ export class LiveFeature {
             if (invalid !== null) {
                 continue;
             }
-            CLI.debug(`Sending message to ${ws.user.id}`);
-            ws.send(JSON.stringify({
-                type: "message",
-                message
-            }));
+            ws.send(payload);
         }
     }
 
@@ -161,6 +173,12 @@ export class LiveFeature {
 
         await db.deleteMessage(messageId);
 
+        const payload = JSON.stringify({
+            type: "removeMessage",
+            channelId: message.channelId,
+            messageId
+        });
+        CLI.debug(`Propagating message removal from ${user.id} to ${clients.size} clients.`);
         for (const ws of clients) {
             if (ws.readyState !== ws.OPEN) {
                 continue;
@@ -174,12 +192,65 @@ export class LiveFeature {
             if (invalid !== null) {
                 continue;
             }
-            CLI.debug(`Removing message from ${ws.user.id}`);
-            ws.send(JSON.stringify({
-                type: "removeMessage",
-                channelId: message.channelId,
-                messageId
-            }));
+            ws.send(payload);
+        }
+    }
+
+    private static async propagateStatus(data: any, user: User, clients: Set<UserWebSocket>, ws: UserWebSocket) {
+        const payload = JSON.stringify({
+            type: "status",
+            status: data.status,
+            userId: user.id
+        });
+
+        CLI.debug(`Propagating status from ${user.id} to ${clients.size} clients.`);
+        for (const ws of clients) {
+            if (ws.readyState !== ws.OPEN) {
+                continue;
+            }
+
+            if (ws.user.id === user.id) {
+                continue;
+            }
+
+            ws.send(payload);
+        }
+    }
+
+    private static async createChannelDm(data: any, user: User, clients: Set<UserWebSocket>, client: UserWebSocket, db: MariaDbDatabase) {
+        const targetUserId = data.targetUserId;
+        if (!targetUserId) {
+            client.send(JSON.stringify({error: "Target User ID is required"}));
+            return;
+        }
+
+        const targetUser = await db.getUserById(targetUserId);
+        if (!targetUser) {
+            client.send(JSON.stringify({error: "Target User not found"}));
+            return;
+        }
+
+        const channelId = await db.createChannelDm(user.id, targetUserId);
+        const channel = await db.getChannelById(channelId);
+        if (!channel) {
+            client.send(JSON.stringify({error: "Could not create channel"}));
+            return;
+        }
+        CLI.success(`Created DM channel with ID ${channelId}.`);
+
+        const payload = JSON.stringify({
+            type: "newChannel",
+            channel
+        });
+        for (const ws of clients) {
+            if (ws.readyState !== ws.OPEN) {
+                continue;
+            }
+
+            if (ws.user.id === user.id || ws.user.id === targetUserId) {
+                CLI.debug(`Sending new channel to ${ws.user.id}`);
+                ws.send(payload);
+            }
         }
     }
 }

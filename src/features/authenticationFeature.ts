@@ -6,7 +6,6 @@ import {AuthEndpoints} from "./authentication/endpoints";
 import {AuthActions} from "./authentication/actions";
 import {MariaDbDatabase} from "./database/mariaDbDatabase.js";
 import {User} from "./database/models";
-import {CLI} from "../tooling/CLI";
 
 export class AuthenticationFeature {
     static enable(__dirname: string, app: Application, db: MariaDbDatabase, userMap: Map<string, User>) {

@@ -1,11 +1,12 @@
 import passport from "passport";
 import {CLI} from "../../tooling/CLI";
-import {AuthActions, SafeUser, safeUser} from "./actions";
+import {AuthActions, safeUser} from "./actions";
 import {IP} from "../../tooling/IP";
 import {PermissionsList} from "../../enums/permissionsList";
 import {Request, Response} from "express";
 import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {User} from "../database/models";
+import {SafeUser} from "../../models/safeUser";
 
 export class AuthEndpoints {
     static logout(): (arg0: Request, arg1: Response) => void {
