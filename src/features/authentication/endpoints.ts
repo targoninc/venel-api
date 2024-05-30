@@ -155,7 +155,13 @@ export class AuthEndpoints {
         return async (req: Request, res: Response) => {
             const user = req.user as User;
             const {username, displayname, description} = req.body;
-            if (username) {
+            const oldUser = await db.getUserById(user.id);
+            if (!oldUser) {
+                res.send({error: "User not found"});
+                return;
+            }
+
+            if (username && username !== oldUser.username) {
                 if (username.length < 3) {
                     res.send({error: "Username must be at least 3 characters long"});
                     return;
@@ -167,10 +173,12 @@ export class AuthEndpoints {
                 }
                 await db.updateUserUsername(user.id, username);
             }
-            if (displayname) {
+
+            if (displayname && displayname !== oldUser.displayname) {
                 await db.updateUserDisplayname(user.id, displayname);
             }
-            if (description) {
+
+            if (description && description !== oldUser.description) {
                 await db.updateUserDescription(user.id, description);
             }
 
