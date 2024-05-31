@@ -71,4 +71,46 @@ export class BridgingEndpoints {
             res.send("Instance removed.");
         }
     }
+
+    static toggleAllowlist(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+
+            const permissions = await db.getUserPermissions(user.id);
+            if (!permissions || !permissions.some(p => p.name === PermissionsList.toggleBridgeInstanceAllowlist.name)) {
+                res.status(403).send("You do not have permission to edit bridged instances.");
+                return;
+            }
+
+            const {id} = req.body;
+            if (!id) {
+                res.status(400).send("Missing required field 'id'");
+                return;
+            }
+
+            await db.toggleBridgedInstanceAllowlist(id);
+            res.send("Allowlist toggled.");
+        }
+    }
+
+    static toggleEnabled(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+
+            const permissions = await db.getUserPermissions(user.id);
+            if (!permissions || !permissions.some(p => p.name === PermissionsList.toggleBridgeInstanceEnabled.name)) {
+                res.status(403).send("You do not have permission to edit bridged instances.");
+                return;
+            }
+
+            const {id} = req.body;
+            if (!id) {
+                res.status(400).send("Missing required field 'id'");
+                return;
+            }
+
+            await db.toggleBridgedInstanceEnabled(id);
+            res.send("Enabled toggled.");
+        }
+    }
 }

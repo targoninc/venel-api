@@ -226,4 +226,12 @@ WHERE ur.userId = ?`, [userId]);
         const rows = await this.query("SELECT * FROM venel.bridgeInstances WHERE url = ?", [url]);
         return rows ? rows[0] : null;
     }
+
+    async toggleBridgedInstanceAllowlist(id: Id) {
+        await this.query("UPDATE venel.bridgeInstances SET useAllowlist = !useAllowlist WHERE id = ?", [id]);
+    }
+
+    async toggleBridgedInstanceEnabled(id: Id) {
+        await this.query("UPDATE venel.bridgeInstances SET enabled = !enabled WHERE id = ?", [id]);
+    }
 }

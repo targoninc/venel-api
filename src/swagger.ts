@@ -1269,6 +1269,84 @@ export const swaggerOptions = {
                         }
                     }
                 }
+            },
+            "/api/bridging/toggleAllowlist": {
+                patch: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Toggle the allowlist for an instance",
+                    tags: [
+                        "Bridging"
+                    ],
+                    description: "Toggle the allowlist for an instance",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        id: {
+                                            type: "integer",
+                                            description: "The ID of the instance to toggle the allowlist for"
+                                        }
+                                    },
+                                    required: ["id"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Allowlist toggled successfully"
+                        },
+                        400: {
+                            description: "Bad Request: ID is required"
+                        }
+                    }
+                }
+            },
+            "/api/bridging/toggleEnabled": {
+                patch: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Toggle the enabled status for an instance",
+                    tags: [
+                        "Bridging"
+                    ],
+                    description: "Toggle the enabled status for an instance",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        id: {
+                                            type: "integer",
+                                            description: "The ID of the instance to toggle the enabled status for"
+                                        }
+                                    },
+                                    required: ["id"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Enabled status toggled successfully"
+                        },
+                        400: {
+                            description: "Bad Request: ID is required"
+                        }
+                    }
+                }
             }
         },
         components: {

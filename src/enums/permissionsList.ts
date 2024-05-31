@@ -64,6 +64,10 @@ export const PermissionsList: Record<string, Permission> = {
         name: "toggleBridgeInstanceAllowlist",
         description: "Can toggle the allowlist of a bridged instance."
     },
+    toggleBridgeInstanceEnabled: {
+        name: "toggleBridgeInstanceEnabled",
+        description: "Can toggle the enabled status of a bridged instance."
+    },
     addBridgedInstanceUser: {
         name: "addBridgedInstanceUser",
         description: "Can add an allowed user to a bridged instance."
