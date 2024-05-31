@@ -89,6 +89,7 @@ export interface UserRole {
 
 export interface User {
   'archived': boolean;
+    'avatar': Buffer | null;
   'createdAt': Date;
   'description': string | null;
   'displayname': string | null;

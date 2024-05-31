@@ -1,3 +1,6 @@
+set global net_buffer_length = 1000000;
+set global max_allowed_packet = 1000000000;
+
 CREATE SCHEMA IF NOT EXISTS venel;
 
 create table if not exists venel.bridgeInstances

@@ -6,6 +6,7 @@ import {AuthEndpoints} from "./authentication/endpoints";
 import {AuthActions} from "./authentication/actions";
 import {MariaDbDatabase} from "./database/mariaDbDatabase.js";
 import {User} from "./database/models";
+import bodyParser from "body-parser";
 
 export class AuthenticationFeature {
     static enable(__dirname: string, app: Application, db: MariaDbDatabase, userMap: Map<string, User>) {
@@ -34,7 +35,9 @@ export class AuthenticationFeature {
             next();
         });
 
-        app.use(express.json());
+        // app.use(express.json());
+        app.use(bodyParser.json({limit: '50mb'}));
+        app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
         passport.use(PassportStrategy(db));
         passport.serializeUser(PassportSerializeUser());

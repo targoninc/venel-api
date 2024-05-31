@@ -7,6 +7,7 @@ import {Request, Response} from "express";
 import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {User} from "../database/models";
 import {SafeUser} from "../../models/safeUser";
+import Jimp from "jimp";
 
 export class AuthEndpoints {
     static logout(): (arg0: Request, arg1: Response) => void {
@@ -198,19 +199,18 @@ export class AuthEndpoints {
             const user = req.user as User;
             const {avatar} = req.body;
             if (!avatar) {
-                res.send({error: "Avatar is required"});
+                res.status(400).send({error: "Avatar is required"});
                 return;
             }
 
-            if (typeof avatar !== 'string' || !avatar.startsWith('data:image/')) {
-                res.send({error: "Avatar must be a valid image"});
-                return;
-            }
+            const image = await Jimp.read(Buffer.from(avatar, 'base64'));
+            image.quality(60).resize(256, 256);
+            const compressedImage = await image.getBase64Async(Jimp.MIME_JPEG);
 
-            await db.updateUserAvatar(user.id, avatar);
+            await db.updateUserAvatar(user.id, compressedImage);
             const outUser = await db.getUserById(user.id);
             if (!outUser) {
-                res.send({error: "User not found"});
+                res.status(404).send({error: "User not found"});
                 return;
             }
             res.send({

@@ -45,6 +45,11 @@ export class AuthActions {
 }
 
 export function safeUser(user: User): SafeUser {
+    let avatar = null;
+    if (user.avatar?.constructor === Buffer) {
+        avatar = user.avatar.toString();
+    }
+
     return {
         id: user.id,
         username: user.username,
@@ -52,6 +57,7 @@ export function safeUser(user: User): SafeUser {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         description: user.description,
+        avatar,
         archived: user.archived
     };
 }
