@@ -72,6 +72,7 @@ create table if not exists venel.users
         primary key,
     username       varchar(255)                           not null,
     phoneNumber    varchar(255)                           null,
+    avatar mediumblob null,
     passwordHash   varchar(64)                            not null,
     displayname    varchar(255)                           null,
     description    text                                   null,

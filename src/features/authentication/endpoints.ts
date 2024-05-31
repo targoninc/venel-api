@@ -193,6 +193,32 @@ export class AuthEndpoints {
         }
     }
 
+    static updateAvatar(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+            const {avatar} = req.body;
+            if (!avatar) {
+                res.send({error: "Avatar is required"});
+                return;
+            }
+
+            if (typeof avatar !== 'string' || !avatar.startsWith('data:image/')) {
+                res.send({error: "Avatar must be a valid image"});
+                return;
+            }
+
+            await db.updateUserAvatar(user.id, avatar);
+            const outUser = await db.getUserById(user.id);
+            if (!outUser) {
+                res.send({error: "User not found"});
+                return;
+            }
+            res.send({
+                user: safeUser(outUser)
+            });
+        }
+    }
+
     static getAllPermissions(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             res.send({

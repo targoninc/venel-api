@@ -204,6 +204,45 @@ export const swaggerOptions = {
                     }
                 ]
             },
+            "/api/auth/updateAvatar": {
+                post: {
+                    summary: "Update the user's avatar",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Update the user's avatar",
+                    requestBody: {
+                        description: "The new avatar",
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        avatar: {
+                                            type: "string",
+                                            description: "The new avatar as a blob"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Avatar updated successfully"
+                        },
+                        401: {
+                            description: "Unauthorized"
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
             "/api/auth/deleteUser": {
                 delete: {
                     summary: "Delete a user",

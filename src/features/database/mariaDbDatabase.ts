@@ -205,4 +205,8 @@ WHERE ur.userId = ?`, [userId]);
     async searchUsers(query: string): Promise<User[] | null> {
         return await this.query("SELECT * FROM venel.users WHERE username LIKE ? OR displayname LIKE ?", [`%${query}%`, `%${query}%`]);
     }
+
+    async updateUserAvatar(id: Id, avatar: string) {
+        await this.query("UPDATE venel.users SET avatar = ? WHERE id = ?", [avatar, id]);
+    }
 }
