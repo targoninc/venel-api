@@ -35,8 +35,40 @@ export class BridgingEndpoints {
                 return;
             }
 
-            const instance = await db.addBridgedInstance(url, useAllowlist, enabled);
+            const exists = await db.getBridgedInstanceByUrl(url);
+            if (exists) {
+                res.status(400).send("An instance with that URL already exists.");
+                return;
+            }
+
+            await db.addBridgedInstance(url, useAllowlist, enabled);
+            const instance = await db.getBridgedInstanceByUrl(url);
+            if (!instance) {
+                res.status(500).send("Failed to add instance.");
+                return;
+            }
             res.send(instance);
+        }
+    }
+
+    static removeInstance(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+
+            const permissions = await db.getUserPermissions(user.id);
+            if (!permissions || !permissions.some(p => p.name === PermissionsList.removeBridgedInstance.name)) {
+                res.status(403).send("You do not have permission to remove bridged instances.");
+                return;
+            }
+
+            const {id} = req.body;
+            if (!id) {
+                res.status(400).send("Missing required field 'id'");
+                return;
+            }
+
+            await db.removeBridgedInstance(id);
+            res.send("Instance removed.");
         }
     }
 }

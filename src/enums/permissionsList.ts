@@ -4,6 +4,10 @@ export type Permission = {
 };
 
 export const PermissionsList: Record<string, Permission> = {
+    viewUsers: {
+        name: "viewUsers",
+        description: "Can view a list of users."
+    },
     addUser: {
         name: "addUser",
         description: "Can add a user."
@@ -11,6 +15,10 @@ export const PermissionsList: Record<string, Permission> = {
     archiveUser: {
         name: "archiveUser",
         description: "Can archive a user."
+    },
+    editUser: {
+        name: "editUser",
+        description: "Can edit a user."
     },
     deleteUser: {
         name: "deleteUser",

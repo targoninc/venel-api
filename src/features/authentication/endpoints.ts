@@ -47,6 +47,26 @@ export class AuthEndpoints {
         };
     }
 
+    static getUsers(db: MariaDbDatabase): (arg0: Request, arg1: Response) => void {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+
+            const permissions = await db.getUserPermissions(user.id);
+            if (!permissions || !permissions.some(p => p.name === PermissionsList.viewUsers.name)) {
+                res.status(403).send({error: "You do not have permission to view users"});
+                return;
+            }
+
+            const users = await db.getUsers();
+            if (!users) {
+                res.send({error: "No users found"});
+                return;
+            }
+
+            res.send({users: users.map(u => safeUser(u))});
+        };
+    }
+
     static authorizeUser(db: MariaDbDatabase) {
         async function authUser(req: Request, res: Response, next: Function): Promise<void> {
             const cleanUsername = req.body.username.toLowerCase();

@@ -217,4 +217,13 @@ WHERE ur.userId = ?`, [userId]);
     async addBridgedInstance(url: string, useAllowlist: boolean, enabled: boolean) {
         await this.query("INSERT INTO venel.bridgeInstances (url, useAllowlist, enabled) VALUES (?, ?, ?)", [url, useAllowlist, enabled]);
     }
+
+    async removeBridgedInstance(id: Id) {
+        await this.query("DELETE FROM venel.bridgeInstances WHERE id = ?", [id]);
+    }
+
+    async getBridgedInstanceByUrl(url: string): Promise<BridgeInstance | null> {
+        const rows = await this.query("SELECT * FROM venel.bridgeInstances WHERE url = ?", [url]);
+        return rows ? rows[0] : null;
+    }
 }

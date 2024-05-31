@@ -9,5 +9,6 @@ export class BridgingFeature {
         const bPrefix = "/api/bridging";
         app.get(`${bPrefix}/getInstances`, AuthActions.checkAuthenticated, BridgingEndpoints.getInstances(db));
         app.post(`${bPrefix}/addInstance`, AuthActions.checkAuthenticated, BridgingEndpoints.addInstance(db));
+        app.delete(`${bPrefix}/removeInstance`, AuthActions.checkAuthenticated, BridgingEndpoints.removeInstance(db));
     }
 }

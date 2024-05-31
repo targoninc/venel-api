@@ -158,6 +158,40 @@ export const swaggerOptions = {
                     ]
                 }
             },
+            "/api/auth/getUsers": {
+                get: {
+                    summary: "Get a list of all users",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Get all users",
+                    responses: {
+                        200: {
+                            description: "All users",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            users: {
+                                                type: "array",
+                                                items: {
+                                                    "$ref": "#/components/schemas/User"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
             "/api/auth/updateUser": {
                 patch: {
                     summary: "Update user properties",
@@ -1122,7 +1156,7 @@ export const swaggerOptions = {
                 }
             },
             "/api/bridging/getInstances": {
-                post: {
+                get: {
                     security: [
                         {
                             cookieAuth: []
@@ -1193,6 +1227,45 @@ export const swaggerOptions = {
                         },
                         400: {
                             description: "Bad Request: URL is required"
+                        }
+                    }
+                }
+            },
+            "/api/bridging/removeInstance": {
+                delete: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Remove an instance",
+                    tags: [
+                        "Bridging"
+                    ],
+                    description: "Remove an instance",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        id: {
+                                            type: "integer",
+                                            description: "The ID of the instance to remove"
+                                        }
+                                    },
+                                    required: ["id"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Instance removed successfully"
+                        },
+                        400: {
+                            description: "Bad Request: ID is required"
                         }
                     }
                 }
