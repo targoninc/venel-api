@@ -19,7 +19,8 @@ export class BridgingEndpoints {
             let out: ViewableInstance[] = [];
             for (const instance of instances) {
                 const newInstance = instance as ViewableInstance;
-                newInstance.allowlist = await db.getBridgedInstanceAllowlist(instance.id);
+                newInstance.bridgedUsers = await db.getBridgesUsersForInstance(instance.id);
+                out.push(newInstance);
             }
             res.send(out);
         }
