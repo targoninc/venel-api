@@ -1,6 +1,6 @@
 import mariadb from 'mariadb';
 import {CLI} from "../../tooling/CLI";
-import {Channel, ChannelMember, Id, Message, Permission, Role, User} from "./models";
+import {BridgeInstance, Channel, ChannelMember, Id, Message, Permission, Role, User} from "./models";
 
 export class MariaDbDatabase {
     private readonly host: string;
@@ -208,5 +208,13 @@ WHERE ur.userId = ?`, [userId]);
 
     async updateUserAvatar(id: Id, avatar: string) {
         await this.query("UPDATE venel.users SET avatar = ? WHERE id = ?", [avatar, id]);
+    }
+
+    async getBridgedInstances(): Promise<BridgeInstance[] | null> {
+        return await this.query("SELECT * FROM venel.bridgeInstances");
+    }
+
+    async addBridgedInstance(url: string, useAllowlist: boolean, enabled: boolean) {
+        await this.query("INSERT INTO venel.bridgeInstances (url, useAllowlist, enabled) VALUES (?, ?, ?)", [url, useAllowlist, enabled]);
     }
 }

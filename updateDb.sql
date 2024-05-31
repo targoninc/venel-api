@@ -8,6 +8,7 @@ create table if not exists venel.bridgeInstances
     id           bigint auto_increment
         primary key,
     url          varchar(512)         not null,
+    enabled      tinyint(1) default 1 not null,
     useAllowlist tinyint(1) default 1 not null,
     constraint bridgeInstances_pk_2
         unique (url)

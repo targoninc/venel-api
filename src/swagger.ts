@@ -1120,6 +1120,82 @@ export const swaggerOptions = {
                         }
                     }
                 }
+            },
+            "/api/bridging/getInstances": {
+                post: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Get all instances",
+                    tags: [
+                        "Bridging"
+                    ],
+                    description: "Get all instances",
+                    responses: {
+                        200: {
+                            description: "Instances retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "array",
+                                        items: {
+                                            type: "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/api/bridging/addInstance": {
+                post: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Add an instance",
+                    tags: [
+                        "Bridging"
+                    ],
+                    description: "Add an instance",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        url: {
+                                            type: "string",
+                                            description: "The URL of the instance"
+                                        },
+                                        useAllowlist: {
+                                            type: "boolean",
+                                            description: "Whether to use the allowlist"
+                                        },
+                                        enabled: {
+                                            type: "boolean",
+                                            description: "Whether the instance is enabled"
+                                        }
+                                    },
+                                    required: ["url"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Instance added successfully"
+                        },
+                        400: {
+                            description: "Bad Request: URL is required"
+                        }
+                    }
+                }
             }
         },
         components: {

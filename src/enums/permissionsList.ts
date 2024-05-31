@@ -40,6 +40,10 @@ export const PermissionsList: Record<string, Permission> = {
         name: "removeUserFromRole",
         description: "Can remove a user from a role."
     },
+    viewBridgedInstances: {
+        name: "viewBridgedInstances",
+        description: "Can view a list of bridged instances."
+    },
     addBridgedInstance: {
         name: "addBridgedInstance",
         description: "Can add a bridged instance."

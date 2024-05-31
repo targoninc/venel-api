@@ -8,6 +8,7 @@ import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {User} from "../database/models";
 import {SafeUser} from "../../models/safeUser";
 import Jimp from "jimp";
+import {OwnUser} from "../../models/ownUser";
 
 export class AuthEndpoints {
     static logout(): (arg0: Request, arg1: Response) => void {
@@ -27,9 +28,22 @@ export class AuthEndpoints {
         }
     }
 
-    static getUser(): (arg0: Request, arg1: Response) => void {
-        return (req: Request, res: Response) => {
-            res.send({user: req.user});
+    static getUser(db: MariaDbDatabase): (arg0: Request, arg1: Response) => void {
+        return async (req: Request, res: Response) => {
+            const user = req.user as OwnUser;
+
+            let roles = await db.getUserRoles(user.id);
+            if (!roles) {
+                roles = [];
+            }
+            user.roles = roles;
+            let permissions = await db.getUserPermissions(user.id);
+            if (!permissions) {
+                permissions = [];
+            }
+            user.permissions = permissions;
+
+            res.send({ user });
         };
     }
 
