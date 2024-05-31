@@ -9,6 +9,7 @@ import {User} from "../database/models";
 import {SafeUser} from "../../models/safeUser";
 import Jimp from "jimp";
 import {OwnUser} from "../../models/ownUser";
+import {AdminPanelUser} from "../../models/adminPanelUser";
 
 export class AuthEndpoints {
     static logout(): (arg0: Request, arg1: Response) => void {
@@ -63,7 +64,21 @@ export class AuthEndpoints {
                 return;
             }
 
-            res.send({users: users.map(u => safeUser(u))});
+            const out = [];
+            for (let user of users) {
+                const newUser = safeUser(user) as AdminPanelUser;
+                const roles = await db.getUserRoles(user.id);
+                if (roles) {
+                    newUser.roles = roles;
+                }
+                const permissions = await db.getUserPermissions(user.id);
+                if (permissions) {
+                    newUser.permissions = permissions;
+                }
+                out.push(newUser);
+            }
+
+            res.send({users: out});
         };
     }
 

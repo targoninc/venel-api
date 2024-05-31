@@ -2,6 +2,7 @@ import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {Request, Response} from "express";
 import {User} from "../database/models";
 import {PermissionsList} from "../../enums/permissionsList";
+import {ViewableInstance} from "../../models/viewableInstance";
 
 export class BridgingEndpoints {
     static getInstances(db: MariaDbDatabase) {
@@ -15,7 +16,12 @@ export class BridgingEndpoints {
             }
 
             const instances = await db.getBridgedInstances() || [];
-            res.send(instances);
+            let out: ViewableInstance[] = [];
+            for (const instance of instances) {
+                const newInstance = instance as ViewableInstance;
+                newInstance.allowlist = await db.getBridgedInstanceAllowlist(instance.id);
+            }
+            res.send(out);
         }
     }
 

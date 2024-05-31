@@ -234,4 +234,8 @@ WHERE ur.userId = ?`, [userId]);
     async toggleBridgedInstanceEnabled(id: Id) {
         await this.query("UPDATE venel.bridgeInstances SET enabled = !enabled WHERE id = ?", [id]);
     }
+
+    async getBridgedInstanceAllowlist(id: Id) {
+        return await this.query("SELECT u.id, u.username, u.displayname, u.description, u.avatar FROM venel.users u INNER JOIN venel.bridgedUsers bia ON u.id = bia.userId WHERE bia.instanceId = ?", [id]);
+    }
 }

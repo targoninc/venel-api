@@ -10,3 +10,4 @@ export interface SafeUser {
     'description': string | null;
     'archived': boolean;
 }
+
