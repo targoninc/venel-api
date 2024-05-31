@@ -219,7 +219,7 @@ export class MessagingEndpoints {
                         if (channel.name === previousName) {
                             channel.name = "Note to self";
                         }
-                        channel.members = members;
+                        channel.members = members.map(u => safeUser(u));
                     }
                 }
             }

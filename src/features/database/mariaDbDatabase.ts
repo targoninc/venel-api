@@ -177,7 +177,7 @@ WHERE ur.userId = ?`, [userId]);
     }
 
     async getChannelMembersAsUsers(channelId: Id): Promise<User[] | null> {
-        return await this.query("SELECT u.id, u.updatedAt, u.createdAt, u.username, u.displayname, u.description FROM venel.users u INNER JOIN venel.channelMembers cm ON u.id = cm.userId WHERE cm.channelId = ?", [channelId]);
+        return await this.query("SELECT u.id, u.updatedAt, u.createdAt, u.username, u.displayname, u.description, u.avatar FROM venel.users u INNER JOIN venel.channelMembers cm ON u.id = cm.userId WHERE cm.channelId = ?", [channelId]);
     }
 
     async getMessageById(messageId: Id): Promise<Message | null> {
