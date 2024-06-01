@@ -1,6 +1,7 @@
 import mariadb from 'mariadb';
 import {CLI} from "../../tooling/CLI";
 import {BridgeInstance, Channel, ChannelMember, Id, Message, Permission, Role, User} from "./models";
+import {SafeUser} from "../../models/safeUser";
 
 export class MariaDbDatabase {
     private readonly host: string;
@@ -235,7 +236,20 @@ WHERE ur.userId = ?`, [userId]);
         await this.query("UPDATE venel.bridgeInstances SET enabled = !enabled WHERE id = ?", [id]);
     }
 
-    async getBridgesUsersForInstance(id: Id) {
+    async getBridgesUsersForInstance(id: Id): Promise<SafeUser[]> {
         return await this.query("SELECT u.id, u.username, u.displayname, u.description, u.avatar FROM venel.users u INNER JOIN venel.bridgedUsers bia ON u.id = bia.userId WHERE bia.instanceId = ?", [id]);
+    }
+
+    async addBridgedUser(instanceId: Id, userId: Id) {
+        await this.query("INSERT INTO venel.bridgedUsers (instanceId, userId) VALUES (?, ?)", [instanceId, userId]);
+    }
+
+    async removeBridgedUser(instanceId: Id, userId: Id) {
+        await this.query("DELETE FROM venel.bridgedUsers WHERE instanceId = ? AND userId = ?", [instanceId, userId]);
+    }
+
+    async getBridgedInstanceById(instanceId: Id) {
+        const rows = await this.query("SELECT * FROM venel.bridgeInstances WHERE id = ?", [instanceId]);
+        return rows ? rows[0] : null;
     }
 }

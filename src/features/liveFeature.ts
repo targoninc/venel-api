@@ -125,7 +125,7 @@ export class LiveFeature {
             return;
         }
         if (!user.avatar) {
-            const nUser = await db.getUserById(message.sender.id);
+            const nUser = await db.getUserById(user.id);
             if (nUser) {
                 user.avatar = nUser.avatar;
             }

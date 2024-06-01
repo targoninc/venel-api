@@ -1347,6 +1347,92 @@ export const swaggerOptions = {
                         }
                     }
                 }
+            },
+            "/api/bridging/addBridgedUser": {
+                post: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Add a bridged user",
+                    tags: [
+                        "Bridging"
+                    ],
+                    description: "Add a bridged user",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        userId: {
+                                            type: "integer",
+                                            description: "The ID of the user to bridge"
+                                        },
+                                        instanceId: {
+                                            type: "integer",
+                                            description: "The ID of the instance to bridge the user to"
+                                        }
+                                    },
+                                    required: ["userId", "instanceId"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "User bridged successfully"
+                        },
+                        400: {
+                            description: "Bad Request: User ID and/or Instance ID are required"
+                        }
+                    }
+                }
+            },
+            "/api/bridging/removeBridgedUser": {
+                delete: {
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ],
+                    summary: "Remove a bridged user",
+                    tags: [
+                        "Bridging"
+                    ],
+                    description: "Remove a bridged user",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        userId: {
+                                            type: "integer",
+                                            description: "The ID of the user to disallow bridging"
+                                        },
+                                        instanceId: {
+                                            type: "integer",
+                                            description: "The ID of the instance to disallow bridging the user from"
+                                        }
+                                    },
+                                    required: ["userId", "instanceId"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "User unbridged successfully"
+                        },
+                        400: {
+                            description: "Bad Request: User ID and/or Instance ID are required"
+                        }
+                    }
+                }
             }
         },
         components: {

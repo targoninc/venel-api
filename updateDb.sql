@@ -27,6 +27,7 @@ create table if not exists venel.channels
     updatedAt        datetime   default current_timestamp() not null on update current_timestamp(),
     constraint channels_bridgeInstances_id_fk
         foreign key (bridgeInstanceId) references venel.bridgeInstances (id)
+            on delete set null
 );
 
 create table if not exists venel.permissions
@@ -93,6 +94,7 @@ create table if not exists venel.bridgedUsers
 (
     instanceId bigint not null,
     userId     bigint not null,
+    createdAt  datetime default current_timestamp() not null,
     primary key (instanceId, userId),
     constraint bridgedUsers_bridgeInstances_id_fk
         foreign key (userId) references venel.bridgeInstances (id)
@@ -129,9 +131,11 @@ create table if not exists venel.messages
         foreign key (channelId) references venel.channels (id)
             on delete cascade,
     constraint messages_ibfk_1
-        foreign key (parentMessageId) references venel.messages (id),
+        foreign key (parentMessageId) references venel.messages (id)
+            on delete set null,
     constraint messages_ibfk_2
         foreign key (senderId) references venel.users (id)
+            on delete cascade
 );
 
 create table if not exists venel.audioAttachments
@@ -142,6 +146,7 @@ create table if not exists venel.audioAttachments
     binaryContent mediumblob null,
     constraint audioAttachments_ibfk_1
         foreign key (messageId) references venel.messages (id)
+            on delete cascade
 );
 
 create index if not exists messageId
@@ -155,6 +160,7 @@ create table if not exists venel.imageAttachments
     binaryContent mediumblob null,
     constraint imageAttachments_ibfk_1
         foreign key (messageId) references venel.messages (id)
+            on delete cascade
 );
 
 create index if not exists messageId
@@ -166,9 +172,11 @@ create table if not exists venel.messageReactions
     reactionId bigint not null,
     primary key (messageId, reactionId),
     constraint messageReactions_ibfk_1
-        foreign key (messageId) references venel.messages (id),
+        foreign key (messageId) references venel.messages (id)
+            on delete cascade,
     constraint messageReactions_ibfk_2
         foreign key (reactionId) references venel.reactions (id)
+            on delete cascade
 );
 
 create index if not exists reactionId

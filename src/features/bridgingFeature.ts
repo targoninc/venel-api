@@ -12,5 +12,9 @@ export class BridgingFeature {
         app.delete(`${bPrefix}/removeInstance`, AuthActions.checkAuthenticated, BridgingEndpoints.removeInstance(db));
         app.patch(`${bPrefix}/toggleAllowlist`, AuthActions.checkAuthenticated, BridgingEndpoints.toggleAllowlist(db));
         app.patch(`${bPrefix}/toggleEnabled`, AuthActions.checkAuthenticated, BridgingEndpoints.toggleEnabled(db));
+
+        // Users
+        app.post(`${bPrefix}/addBridgedUser`, AuthActions.checkAuthenticated, BridgingEndpoints.addBridgedUser(db));
+        app.delete(`${bPrefix}/removeBridgedUser`, AuthActions.checkAuthenticated, BridgingEndpoints.removeBridgedUser(db));
     }
 }

@@ -44,7 +44,7 @@ export class AuthActions {
     }
 }
 
-export function safeUser(user: User): SafeUser {
+export function safeUser(user: User | SafeUser): SafeUser {
     let avatar = null;
     if (user.avatar?.constructor === Buffer) {
         avatar = user.avatar.toString();

@@ -3,6 +3,7 @@ import {Request, Response} from "express";
 import {User} from "../database/models";
 import {PermissionsList} from "../../enums/permissionsList";
 import {ViewableInstance} from "../../models/viewableInstance";
+import {safeUser} from "../authentication/actions";
 
 export class BridgingEndpoints {
     static getInstances(db: MariaDbDatabase) {
@@ -20,6 +21,9 @@ export class BridgingEndpoints {
             for (const instance of instances) {
                 const newInstance = instance as ViewableInstance;
                 newInstance.bridgedUsers = await db.getBridgesUsersForInstance(instance.id);
+                for (let user of newInstance.bridgedUsers) {
+                    user = safeUser(user);
+                }
                 out.push(newInstance);
             }
             res.send(out);
@@ -118,6 +122,72 @@ export class BridgingEndpoints {
 
             await db.toggleBridgedInstanceEnabled(id);
             res.send("Enabled toggled.");
+        }
+    }
+
+    static addBridgedUser(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+
+            const permissions = await db.getUserPermissions(user.id);
+            if (!permissions || !permissions.some(p => p.name === PermissionsList.addBridgedInstanceUser.name)) {
+                res.status(403).send("You do not have permission to add users to bridged instances.");
+                return;
+            }
+
+            const {instanceId, userId} = req.body;
+            if (!instanceId || !userId) {
+                res.status(400).send("Missing required field 'instanceId' or 'userId'");
+                return;
+            }
+
+            const addUser = await db.getUserById(userId);
+            if (!addUser) {
+                res.status(404).send("User not found.");
+                return;
+            }
+
+            const instance = await db.getBridgedInstanceById(instanceId);
+            if (!instance) {
+                res.status(404).send("Instance not found.");
+                return;
+            }
+
+            await db.addBridgedUser(instanceId, userId);
+            res.json(safeUser(addUser));
+        }
+    }
+
+    static removeBridgedUser(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+
+            const permissions = await db.getUserPermissions(user.id);
+            if (!permissions || !permissions.some(p => p.name === PermissionsList.removeBridgedInstanceUser.name)) {
+                res.status(403).send("You do not have permission to remove users from bridged instances.");
+                return;
+            }
+
+            const {instanceId, userId} = req.body;
+            if (!instanceId || !userId) {
+                res.status(400).send("Missing required field 'instanceId' or 'userId'");
+                return;
+            }
+
+            const addUser = await db.getUserById(userId);
+            if (!addUser) {
+                res.status(404).send("User not found.");
+                return;
+            }
+
+            const instance = await db.getBridgedInstanceById(instanceId);
+            if (!instance) {
+                res.status(404).send("Instance not found.");
+                return;
+            }
+
+            await db.removeBridgedUser(instanceId, userId);
+            res.json(safeUser(addUser));
         }
     }
 }

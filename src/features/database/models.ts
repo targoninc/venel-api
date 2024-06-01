@@ -11,11 +11,13 @@ export interface AudioAttachment {
 }
 
 export interface BridgedUser {
+  'createdAt': Date;
   'instanceId': Id;
   'userId': Id;
 }
 
 export interface BridgeInstance {
+  'enabled': boolean;
   'id': Id;
   'url': string;
   'useAllowlist': boolean;
@@ -89,7 +91,7 @@ export interface UserRole {
 
 export interface User {
   'archived': boolean;
-    'avatar': Buffer | null;
+  'avatar': Buffer | null;
   'createdAt': Date;
   'description': string | null;
   'displayname': string | null;
