@@ -201,6 +201,55 @@ export class AuthEndpoints {
         }
     }
 
+    static changePassword(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+            const {oldPassword, newPassword} = req.body;
+            if (!oldPassword || !newPassword) {
+                res.status(400);
+                res.send({error: "oldPassword and newPassword are required"});
+                return;
+            }
+
+            const userFromDb = await db.getUserById(user.id);
+            if (!userFromDb) {
+                res.status(404);
+                res.send({error: "User not found"});
+                return;
+            }
+
+            const isCorrect = await AuthActions.verifyPassword(oldPassword, userFromDb.passwordHash);
+            if (!isCorrect) {
+                res.status(401);
+                res.send({error: "Old password is incorrect"});
+                return;
+            }
+
+            const passwordMinLength = 16;
+            const passwordMaxLength = 64;
+            const passwordMustContainNumbers = true;
+            if (newPassword.length < passwordMinLength) {
+                res.status(400);
+                res.send({error: `Password must be at least ${passwordMinLength} characters long`});
+                return;
+            }
+            if (newPassword.length > passwordMaxLength) {
+                res.status(400);
+                res.send({error: `Password must be at most ${passwordMaxLength} characters long`});
+                return;
+            }
+            if (passwordMustContainNumbers && !/\d/.test(newPassword)) {
+                res.status(400);
+                res.send({error: "Password must contain at least one number"});
+                return;
+            }
+
+            const hash = AuthActions.hashPassword(newPassword);
+            await db.updateUserPassword(user.id, hash);
+            res.send({message: "Password changed successfully"});
+        }
+    }
+
     static updateUser(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const user = req.user as User;

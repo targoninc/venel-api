@@ -8,9 +8,13 @@ import {User} from "../database/models";
 import {SafeUser} from "../../models/safeUser";
 
 export class AuthActions {
+    static hashPassword(password: string) {
+        return bcrypt.hashSync(password, 10);
+    }
+
     static async registerUser(req: Request, db: MariaDbDatabase, cleanUsername: string, password: string) {
         const ip = IP.get(req);
-        const hashedPassword = bcrypt.hashSync(password, 10);
+        const hashedPassword = AuthActions.hashPassword(password);
         await db.createUser(cleanUsername, hashedPassword, ip);
 
         const users = await db.getUsers();
@@ -41,6 +45,10 @@ export class AuthActions {
             return next();
         }
         res.status(401).send({error: "Not authenticated"});
+    }
+
+    static async verifyPassword(oldPassword: string, passwordHash: string) {
+        return bcrypt.compare(oldPassword, passwordHash);
     }
 }
 

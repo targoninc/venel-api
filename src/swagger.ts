@@ -192,6 +192,61 @@ export const swaggerOptions = {
                     ]
                 }
             },
+            "/api/auth/changePassword": {
+                patch: {
+                    summary: "Change the password of the current user",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Change the password of the current user",
+                    requestBody: {
+                        description: "The new password",
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    required: [
+                                        "oldPassword",
+                                        "newPassword"
+                                    ],
+                                    properties: {
+                                        oldPassword: {
+                                            type: "string",
+                                            format: "password",
+                                            minLength: 16,
+                                            maxLength: 64,
+                                            example: "testpassword1234",
+                                            description: "The old password"
+                                        },
+                                        newPassword: {
+                                            type: "string",
+                                            format: "password",
+                                            minLength: 16,
+                                            maxLength: 64,
+                                            example: "testpassword1234",
+                                            description: "The new password"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Password changed successfully"
+                        },
+                        401: {
+                            description: "Unauthorized"
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
             "/api/auth/updateUser": {
                 patch: {
                     summary: "Update user properties",

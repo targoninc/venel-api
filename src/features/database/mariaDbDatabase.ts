@@ -269,4 +269,8 @@ WHERE ur.userId = ?`, [userId]);
         const rows = await this.query("SELECT * FROM venel.bridgeInstances WHERE id = ?", [instanceId]);
         return rows ? rows[0] : null;
     }
+
+    async updateUserPassword(id: Id, hash: string) {
+        await this.query("UPDATE venel.users SET passwordHash = ? WHERE id = ?", [hash, id]);
+    }
 }

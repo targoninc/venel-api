@@ -48,6 +48,7 @@ export class AuthenticationFeature {
         app.post(`${prefix}/register`, AuthEndpoints.registerUser(db));
         app.post(`${prefix}/logout`, AuthEndpoints.logout());
         app.get(`${prefix}/getUser`, AuthActions.checkAuthenticated, AuthEndpoints.getUser(db));
+        app.patch(`${prefix}/changePassword`, AuthActions.checkAuthenticated, AuthEndpoints.changePassword(db));
         app.get(`${prefix}/getUsers`, AuthActions.checkAuthenticated, AuthEndpoints.getUsers(db));
         app.patch(`${prefix}/updateUser`, AuthActions.checkAuthenticated, AuthEndpoints.updateUser(db));
         app.post(`${prefix}/updateAvatar`, AuthActions.checkAuthenticated, AuthEndpoints.updateAvatar(db));
