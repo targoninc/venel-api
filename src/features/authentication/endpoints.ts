@@ -10,6 +10,7 @@ import {SafeUser} from "../../models/safeUser";
 import Jimp from "jimp";
 import {OwnUser} from "../../models/ownUser";
 import {AdminPanelUser} from "../../models/adminPanelUser";
+import {DefaultRoles} from "../../enums/defaultRoles";
 
 export class AuthEndpoints {
     static logout(): (arg0: Request, arg1: Response) => void {
@@ -492,7 +493,7 @@ export class AuthEndpoints {
             const user = req.user as User;
             const {userId} = req.body;
             if (!userId) {
-                res.send({error: "userId is required"});
+                res.status(400).send({error: "userId is required"});
                 return;
             }
 
@@ -501,6 +502,16 @@ export class AuthEndpoints {
                 if (!selfPermissions || !selfPermissions.some(p => p.name === PermissionsList.deleteUser.name)) {
                     res.status(403);
                     res.send({error: "You do not have permission to delete this user"});
+                    return;
+                }
+            }
+
+            const selfRoles = await db.getUserRoles(user.id);
+            if (selfRoles && selfRoles.some(r => r.name === DefaultRoles.admin.name)) {
+                const isOnlyAdmin = await db.isOnlyAdmin(parseInt(userId));
+                if (isOnlyAdmin) {
+                    res.status(403);
+                    res.send({error: "You do not have permission to delete the only admin user"});
                     return;
                 }
             }

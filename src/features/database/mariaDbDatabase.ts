@@ -273,4 +273,9 @@ WHERE ur.userId = ?`, [userId]);
     async updateUserPassword(id: Id, hash: string) {
         await this.query("UPDATE venel.users SET passwordHash = ? WHERE id = ?", [hash, id]);
     }
+
+    async isOnlyAdmin(id: Id) {
+        const rows = await this.query("SELECT * FROM venel.userRoles WHERE userId = ? AND roleId = (SELECT id FROM venel.roles WHERE name = 'admin')", [id]);
+        return rows.length === 1;
+    }
 }
