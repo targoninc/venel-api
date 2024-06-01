@@ -128,7 +128,12 @@ export class LiveFeature {
             client.send(JSON.stringify({error: "Message not found"}));
             return;
         }
-        message.sender = safeUser(user);
+        const sender = await db.getUserById(user.id);
+        if (!sender) {
+            client.send(JSON.stringify({error: "Sender not found"}));
+            return;
+        }
+        message.sender = safeUser(sender);
 
         const payload = JSON.stringify({
             type: "message",
