@@ -252,7 +252,8 @@ export class AuthEndpoints {
                 return;
             }
 
-            const image = await Jimp.read(Buffer.from(avatar, 'base64'));
+            const rawData = avatar.replace(/^data:image\/\w+;base64,/, '');
+            const image = await Jimp.read(Buffer.from(rawData, 'base64'));
             image.quality(60).resize(256, 256);
             const compressedImage = await image.getBase64Async(Jimp.MIME_JPEG);
 
