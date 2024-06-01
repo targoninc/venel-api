@@ -3,7 +3,7 @@ set global max_allowed_packet = 1000000000;
 
 CREATE SCHEMA IF NOT EXISTS venel;
 
-create table if not exists venel.bridgeInstances
+create or replace table bridgeInstances
 (
     id           bigint auto_increment
         primary key,
@@ -14,7 +14,7 @@ create table if not exists venel.bridgeInstances
         unique (url)
 );
 
-create table if not exists venel.channels
+create or replace table channels
 (
     id               bigint auto_increment
         primary key,
@@ -26,11 +26,11 @@ create table if not exists venel.channels
     createdAt        datetime   default current_timestamp() not null,
     updatedAt        datetime   default current_timestamp() not null on update current_timestamp(),
     constraint channels_bridgeInstances_id_fk
-        foreign key (bridgeInstanceId) references venel.bridgeInstances (id)
+        foreign key (bridgeInstanceId) references bridgeInstances (id)
             on delete set null
 );
 
-create table if not exists venel.permissions
+create or replace table permissions
 (
     id          bigint auto_increment
         primary key,
@@ -40,14 +40,14 @@ create table if not exists venel.permissions
         unique (name)
 );
 
-create table if not exists venel.reactions
+create or replace table reactions
 (
     id      bigint auto_increment
         primary key,
     content varchar(255) null
 );
 
-create table if not exists venel.roles
+create or replace table roles
 (
     id          int auto_increment
         primary key,
@@ -58,26 +58,26 @@ create table if not exists venel.roles
         unique (name)
 );
 
-create table if not exists venel.rolePermissions
+create or replace table rolePermissions
 (
     roleId       int    not null,
     permissionId bigint not null,
     primary key (permissionId, roleId),
     constraint rolePermissions_permissions_id_fk
-        foreign key (permissionId) references venel.permissions (id)
+        foreign key (permissionId) references permissions (id)
             on delete cascade,
     constraint rolePermissions_roles_id_fk
-        foreign key (roleId) references venel.roles (id)
+        foreign key (roleId) references roles (id)
             on delete cascade
 );
 
-create table if not exists venel.users
+create or replace table users
 (
     id             bigint auto_increment
         primary key,
     username       varchar(255)                           not null,
     phoneNumber    varchar(255)                           null,
-    avatar mediumblob null,
+    avatar         mediumblob                             null,
     passwordHash   varchar(64)                            not null,
     displayname    varchar(255)                           null,
     description    text                                   null,
@@ -90,34 +90,34 @@ create table if not exists venel.users
         unique (username)
 );
 
-create table if not exists venel.bridgedUsers
+create or replace table bridgedUsers
 (
-    instanceId bigint not null,
-    userId     bigint not null,
+    instanceId bigint                               not null,
+    userId     bigint                               not null,
     createdAt  datetime default current_timestamp() not null,
     primary key (instanceId, userId),
     constraint bridgedUsers_bridgeInstances_id_fk
-        foreign key (userId) references venel.bridgeInstances (id)
+        foreign key (userId) references bridgeInstances (id)
             on delete cascade,
     constraint bridgedUsers_users_id_fk
-        foreign key (instanceId) references venel.users (id)
+        foreign key (instanceId) references users (id)
             on delete cascade
 );
 
-create table if not exists venel.channelMembers
+create or replace table channelMembers
 (
     channelId bigint not null,
     userId    bigint not null,
     primary key (channelId, userId),
     constraint channelMembers_channels_id_fk
-        foreign key (channelId) references venel.channels (id)
+        foreign key (channelId) references channels (id)
             on delete cascade,
     constraint channelMembers_users_id_fk
-        foreign key (userId) references venel.users (id)
+        foreign key (userId) references users (id)
             on delete cascade
 );
 
-create table if not exists venel.messages
+create or replace table messages
 (
     id              bigint auto_increment
         primary key,
@@ -128,76 +128,76 @@ create table if not exists venel.messages
     createdAt       timestamp default current_timestamp() not null,
     updatedAt       timestamp default current_timestamp() not null on update current_timestamp(),
     constraint messages_channels_id_fk
-        foreign key (channelId) references venel.channels (id)
+        foreign key (channelId) references channels (id)
             on delete cascade,
     constraint messages_ibfk_1
-        foreign key (parentMessageId) references venel.messages (id)
+        foreign key (parentMessageId) references messages (id)
             on delete set null,
     constraint messages_ibfk_2
-        foreign key (senderId) references venel.users (id)
+        foreign key (senderId) references users (id)
             on delete cascade
 );
 
-create table if not exists venel.audioAttachments
+create or replace table audioAttachments
 (
     id            bigint auto_increment
         primary key,
     messageId     bigint     null,
     binaryContent mediumblob null,
     constraint audioAttachments_ibfk_1
-        foreign key (messageId) references venel.messages (id)
+        foreign key (messageId) references messages (id)
             on delete cascade
 );
 
-create index if not exists messageId
-    on venel.audioAttachments (messageId);
+create or replace index messageId
+    on audioAttachments (messageId);
 
-create table if not exists venel.imageAttachments
+create or replace table imageAttachments
 (
     id            bigint auto_increment
         primary key,
     messageId     bigint     null,
     binaryContent mediumblob null,
     constraint imageAttachments_ibfk_1
-        foreign key (messageId) references venel.messages (id)
+        foreign key (messageId) references messages (id)
             on delete cascade
 );
 
-create index if not exists messageId
-    on venel.imageAttachments (messageId);
+create or replace index messageId
+    on imageAttachments (messageId);
 
-create table if not exists venel.messageReactions
+create or replace table messageReactions
 (
     messageId  bigint not null,
     reactionId bigint not null,
     primary key (messageId, reactionId),
     constraint messageReactions_ibfk_1
-        foreign key (messageId) references venel.messages (id)
+        foreign key (messageId) references messages (id)
             on delete cascade,
     constraint messageReactions_ibfk_2
-        foreign key (reactionId) references venel.reactions (id)
+        foreign key (reactionId) references reactions (id)
             on delete cascade
 );
 
-create index if not exists reactionId
-    on venel.messageReactions (reactionId);
+create or replace index reactionId
+    on messageReactions (reactionId);
 
-create index if not exists parentMessageId
-    on venel.messages (parentMessageId);
+create or replace index parentMessageId
+    on messages (parentMessageId);
 
-create index if not exists senderId
-    on venel.messages (senderId);
+create or replace index senderId
+    on messages (senderId);
 
-create table if not exists venel.userRoles
+create or replace table userRoles
 (
     userId    bigint                               not null,
     roleId    int                                  not null,
     createdAt datetime default current_timestamp() not null,
     constraint userRoles_roles_id_fk
-        foreign key (roleId) references venel.roles (id)
+        foreign key (roleId) references roles (id)
             on delete cascade,
     constraint userRoles_users_id_fk
-        foreign key (userId) references venel.users (id)
+        foreign key (userId) references users (id)
             on delete cascade
 );
 

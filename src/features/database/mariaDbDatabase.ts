@@ -44,13 +44,30 @@ export class MariaDbDatabase {
                 sql,
                 bigIntAsNumber: true
             }, params);
-        } catch (e) {
+        } catch (e: any) {
+            if (e.message.includes("Unknown column")) {
+                await this.handleUnknownColumnError(sql, e);
+            }
             throw e;
         } finally {
             if (conn) {
                 await conn.end();
             }
         }
+    }
+
+    async handleUnknownColumnError(sql: string, e: any) {
+        const matches = e.message.match(/Unknown column '(.+?)'/);
+        if (!matches) {
+            throw e;
+        }
+        const column = matches[1];
+        if (!column) {
+            throw e;
+        }
+        CLI.error(`Unknown column: ${column}`);
+        const table = column.split('.')[0];
+
     }
 
     async getUsers(): Promise<User[] | undefined> {
