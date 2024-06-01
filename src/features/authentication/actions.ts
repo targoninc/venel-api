@@ -61,3 +61,15 @@ export function safeUser(user: User | SafeUser): SafeUser {
         archived: user.archived
     };
 }
+
+export function avatarUser(user: User): User & { avatar: string | null } {
+    let avatar: (Buffer & string) | null = null;
+    if (user.avatar?.constructor === Buffer) {
+        avatar = user.avatar.toString() as (Buffer & string);
+    }
+
+    return {
+        ...user,
+        avatar
+    };
+}

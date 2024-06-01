@@ -6,10 +6,11 @@ import {User} from "./database/models";
 import {Application} from "express";
 import {createServer} from "http";
 import {UserWebSocket} from "./live/UserWebSocket";
-import {safeUser} from "./authentication/actions";
+import {avatarUser, safeUser} from "./authentication/actions";
 import {PermissionsList} from "../enums/permissionsList";
 import {LiveEndpoints} from "./live/endpoints";
 import {ReceivableMessage} from "../models/receivableMessage";
+import Jimp from "jimp";
 
 export class LiveFeature {
     static enable(app: Application, userMap: Map<string, User>, db: MariaDbDatabase) {
@@ -48,6 +49,9 @@ export class LiveFeature {
                 switch (data.type) {
                     case "message":
                         await LiveFeature.sendMessage(data, ws.user, clients, ws, db);
+                        break;
+                    case "updateAvatar":
+                        await LiveFeature.updateAvatar(userMap, data, ws.user, clients, ws, db);
                         break;
                     case "removeMessage":
                         await LiveFeature.removeMessage(data, ws.user, clients, ws, db);
@@ -124,12 +128,6 @@ export class LiveFeature {
             client.send(JSON.stringify({error: "Message not found"}));
             return;
         }
-        if (!user.avatar) {
-            const nUser = await db.getUserById(user.id);
-            if (nUser) {
-                user.avatar = nUser.avatar;
-            }
-        }
         message.sender = safeUser(user);
 
         const payload = JSON.stringify({
@@ -146,6 +144,49 @@ export class LiveFeature {
             if (invalid !== null) {
                 continue;
             }
+            ws.send(payload);
+        }
+    }
+
+    private static async updateAvatar(userMap: Map<string, User>, data: any, user: User, clients: Set<UserWebSocket>, client: UserWebSocket, db: MariaDbDatabase) {
+        const avatar = data.avatar;
+        if (!avatar) {
+            client.send(JSON.stringify({error: "Avatar is required"}));
+            return;
+        }
+
+        const rawData = avatar.replace(/^data:image\/\w+;base64,/, '');
+        const image = await Jimp.read(Buffer.from(rawData, 'base64'));
+        image.quality(60).resize(256, 256);
+        const compressedImage = await image.getBase64Async(Jimp.MIME_JPEG);
+
+        await db.updateUserAvatar(user.id, compressedImage);
+        const outUser = await db.getUserById(user.id);
+        if (!outUser) {
+            client.send(JSON.stringify({error: "User not found"}));
+            return;
+        }
+        client.user = outUser;
+        const userMapKey = Array.from(userMap.keys()).find(k => userMap.get(k)?.id === user.id);
+        if (userMapKey) {
+            userMap.set(userMapKey, outUser);
+        }
+
+        const payload = JSON.stringify({
+            type: "updateAvatar",
+            userId: user.id,
+            avatar: compressedImage
+        });
+        CLI.debug(`Propagating avatar update from ${user.id} to ${clients.size} clients.`);
+        for (const ws of clients) {
+            if (ws.readyState !== ws.OPEN) {
+                continue;
+            }
+
+            if (ws.user.id === user.id) {
+                continue;
+            }
+
             ws.send(payload);
         }
     }
