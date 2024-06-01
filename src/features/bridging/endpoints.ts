@@ -4,6 +4,7 @@ import {User} from "../database/models";
 import {PermissionsList} from "../../enums/permissionsList";
 import {ViewableInstance} from "../../models/viewableInstance";
 import {safeUser} from "../authentication/actions";
+import {SafeUser} from "../../models/safeUser";
 
 export class BridgingEndpoints {
     static getInstances(db: MariaDbDatabase) {
@@ -21,9 +22,12 @@ export class BridgingEndpoints {
             for (const instance of instances) {
                 const newInstance = instance as ViewableInstance;
                 newInstance.bridgedUsers = await db.getBridgesUsersForInstance(instance.id);
+                let outUsers: SafeUser[] = [];
                 for (let user of newInstance.bridgedUsers) {
                     user = safeUser(user);
+                    outUsers.push(user);
                 }
+                newInstance.bridgedUsers = outUsers;
                 out.push(newInstance);
             }
             res.send(out);

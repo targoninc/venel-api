@@ -97,10 +97,10 @@ create table if not exists venel.bridgedUsers
     createdAt  datetime default current_timestamp() not null,
     primary key (instanceId, userId),
     constraint bridgedUsers_bridgeInstances_id_fk
-        foreign key (userId) references venel.bridgeInstances (id)
+        foreign key (instanceId) references venel.bridgeInstances (id)
             on delete cascade,
     constraint bridgedUsers_users_id_fk
-        foreign key (instanceId) references venel.users (id)
+        foreign key (userId) references venel.users (id)
             on delete cascade
 );
 
