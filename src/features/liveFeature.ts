@@ -11,6 +11,8 @@ import {PermissionsList} from "../enums/permissionsList";
 import {LiveEndpoints} from "./live/endpoints";
 import {ReceivableMessage} from "../models/receivableMessage";
 import Jimp from "jimp";
+import {UiChannel} from "../models/uiChannel";
+import {ChannelProcessor} from "./messaging/channelProcessor";
 
 export class LiveFeature {
     static enable(app: Application, userMap: Map<string, User>, db: MariaDbDatabase) {
@@ -58,8 +60,14 @@ export class LiveFeature {
                     case "removeMessage":
                         await LiveFeature.removeMessage(data, ws.user, clients, ws, db);
                         break;
+                    case "editMessage":
+                        await LiveFeature.editMessage(data, ws.user, clients, ws, db);
+                        break;
                     case "status":
                         await LiveFeature.propagateStatus(data, ws.user, clients, ws);
+                        break;
+                    case "channelCreated":
+                        await LiveFeature.propagateNewChannel(data, ws.user, clients, ws, db);
                         break;
                     case "createChannelDm":
                         await LiveFeature.createChannelDm(data, ws.user, clients, ws, db);
@@ -190,10 +198,6 @@ export class LiveFeature {
                 continue;
             }
 
-            if (ws.user.id === user.id) {
-                continue;
-            }
-
             ws.send(payload);
         }
     }
@@ -238,10 +242,6 @@ export class LiveFeature {
                 continue;
             }
 
-            if (ws.user.id === user.id) {
-                continue;
-            }
-
             const invalid = await MessagingEndpoints.checkChannelAccess(db, ws.user, message.channelId);
             if (invalid !== null) {
                 continue;
@@ -260,10 +260,6 @@ export class LiveFeature {
         CLI.debug(`Propagating status from ${user.id} to ${clients.size} clients.`);
         for (const ws of clients) {
             if (ws.readyState !== ws.OPEN) {
-                continue;
-            }
-
-            if (ws.user.id === user.id) {
                 continue;
             }
 
@@ -305,6 +301,96 @@ export class LiveFeature {
                 CLI.debug(`Sending new channel to ${ws.user.id}`);
                 ws.send(payload);
             }
+        }
+    }
+
+    private static async editMessage(data: any, user: User, clients: Set<UserWebSocket>, client: UserWebSocket, db: MariaDbDatabase) {
+        const messageId = data.messageId;
+        if (!messageId) {
+            client.send(JSON.stringify({error: "Message ID is required"}));
+            return;
+        }
+
+        const message = await db.getMessageById(messageId);
+        if (!message) {
+            client.send(JSON.stringify({error: "Message not found"}));
+            return;
+        }
+
+        if (message.senderId !== user.id) {
+            client.send(JSON.stringify({error: "You do not have permission to edit this message"}));
+            return;
+        }
+
+        const invalid = await MessagingEndpoints.checkChannelAccess(db, user, message.channelId);
+        if (invalid !== null) {
+            client.send(JSON.stringify({error: invalid}));
+            return;
+        }
+
+        const text = data.text;
+        if (!text) {
+            client.send(JSON.stringify({error: "Text is required"}));
+            return;
+        }
+
+        await db.editMessage(messageId, text);
+        const editedMessage = await db.getMessageById(messageId);
+        if (!editedMessage) {
+            client.send(JSON.stringify({error: "Message not found"}));
+            return;
+        }
+
+        const payload = JSON.stringify({
+            type: "editMessage",
+            messageId: editedMessage.id,
+            text: editedMessage.text
+        });
+        CLI.debug(`Propagating message edit from ${user.id} to ${clients.size} clients.`);
+        for (const ws of clients) {
+            if (ws.readyState !== ws.OPEN) {
+                continue;
+            }
+
+            const invalid = await MessagingEndpoints.checkChannelAccess(db, ws.user, message.channelId);
+            if (invalid !== null) {
+                continue;
+            }
+            ws.send(payload);
+        }
+    }
+
+    private static async propagateNewChannel(data: any, user: User, clients: Set<UserWebSocket>, client: UserWebSocket, db: MariaDbDatabase) {
+        const id = data.channelId;
+
+        let channel = await db.getChannelById(id) as UiChannel;
+        if (!channel) {
+            client.send(JSON.stringify({error: "Channel not found"}));
+            return;
+        }
+
+        let members = await db.getChannelMembersAsUsers(channel.id);
+        if (!members) {
+            members = [];
+        }
+
+        CLI.debug(`Propagating new channel from ${user.id} to ${clients.size} clients.`);
+        for (const ws of clients) {
+            if (ws.readyState !== ws.OPEN) {
+                continue;
+            }
+
+            const invalid = await MessagingEndpoints.checkChannelAccess(db, ws.user, channel.id);
+            if (invalid !== null) {
+                continue;
+            }
+
+            channel = await ChannelProcessor.processChannel(channel, ws.user, db, members);
+            const payload = JSON.stringify({
+                type: "newChannel",
+                channel
+            });
+            ws.send(payload);
         }
     }
 }

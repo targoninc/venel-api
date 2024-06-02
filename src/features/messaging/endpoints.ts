@@ -6,6 +6,7 @@ import {PermissionsList} from "../../enums/permissionsList";
 import {safeUser} from "../authentication/actions";
 import {ReceivableMessage} from "../../models/receivableMessage";
 import {UiChannel} from "../../models/uiChannel";
+import {ChannelProcessor} from "./channelProcessor";
 
 export class MessagingEndpoints {
     static async checkChannelAccess(db: MariaDbDatabase, user: User, channelId: number) {
@@ -206,24 +207,11 @@ export class MessagingEndpoints {
                 res.json([]);
                 return;
             }
-            for (const channel of channels as UiChannel[]) {
-                if (channel.type === "dm") {
-                    const previousName = channel.name;
-                    const members = await db.getChannelMembersAsUsers(channel.id);
-                    if (members) {
-                        for (const member of members) {
-                            if (member.id !== user.id) {
-                                channel.name = member.displayname ?? member.username;
-                            }
-                        }
-                        if (channel.name === previousName) {
-                            channel.name = "Note to self";
-                        }
-                        channel.members = members.map(u => safeUser(u));
-                    }
-                }
+            let out = [] as UiChannel[];
+            for (let channel of channels as UiChannel[]) {
+                out.push(await ChannelProcessor.processChannel(channel, user, db));
             }
-            res.json(channels);
+            res.json(out);
         }
     }
 
