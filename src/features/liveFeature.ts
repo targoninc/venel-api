@@ -45,7 +45,9 @@ export class LiveFeature {
 
             ws.on("message", async (message: any) => {
                 const data = JSON.parse(message.toString());
-                CLI.debug("Received message: " + JSON.stringify(data, null, 2));
+                if (data.type !== "ping") {
+                    CLI.debug("Received message: " + JSON.stringify(data, null, 2));
+                }
                 switch (data.type) {
                     case "message":
                         await LiveFeature.sendMessage(data, ws.user, clients, ws, db);
@@ -154,18 +156,18 @@ export class LiveFeature {
     }
 
     private static async updateAvatar(userMap: Map<string, User>, data: any, user: User, clients: Set<UserWebSocket>, client: UserWebSocket, db: MariaDbDatabase) {
-        const avatar = data.avatar;
-        if (!avatar) {
-            client.send(JSON.stringify({error: "Avatar is required"}));
-            return;
+        let avatar = data.avatar;
+
+        if (avatar) {
+            const rawData = avatar.replace(/^data:image\/\w+;base64,/, '');
+            const image = await Jimp.read(Buffer.from(rawData, 'base64'));
+            image.quality(60).resize(256, 256);
+            avatar = await image.getBase64Async(Jimp.MIME_JPEG);
+            await db.updateUserAvatar(user.id, avatar);
+        } else {
+            await db.updateUserAvatar(user.id, null);
         }
 
-        const rawData = avatar.replace(/^data:image\/\w+;base64,/, '');
-        const image = await Jimp.read(Buffer.from(rawData, 'base64'));
-        image.quality(60).resize(256, 256);
-        const compressedImage = await image.getBase64Async(Jimp.MIME_JPEG);
-
-        await db.updateUserAvatar(user.id, compressedImage);
         const outUser = await db.getUserById(user.id);
         if (!outUser) {
             client.send(JSON.stringify({error: "User not found"}));
@@ -180,7 +182,7 @@ export class LiveFeature {
         const payload = JSON.stringify({
             type: "updateAvatar",
             userId: user.id,
-            avatar: compressedImage
+            avatar
         });
         CLI.debug(`Propagating avatar update from ${user.id} to ${clients.size} clients.`);
         for (const ws of clients) {
