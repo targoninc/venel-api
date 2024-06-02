@@ -1,6 +1,17 @@
 import mariadb from 'mariadb';
 import {CLI} from "../../tooling/CLI";
-import {BridgeInstance, Channel, ChannelMember, Id, Message, Permission, Role, User} from "./models";
+import {
+    BridgeInstance,
+    Channel,
+    ChannelMember,
+    Id,
+    Message,
+    Permission,
+    Reaction,
+    ReactionGroup,
+    Role,
+    User
+} from "./models";
 import {SafeUser} from "../../models/safeUser";
 
 export class MariaDbDatabase {
@@ -277,5 +288,25 @@ WHERE ur.userId = ?`, [userId]);
     async isOnlyAdmin(id: Id) {
         const rows = await this.query("SELECT * FROM venel.userRoles WHERE userId = ? AND roleId = (SELECT id FROM venel.roles WHERE name = 'admin')", [id]);
         return rows.length === 1;
+    }
+
+    async getAvailableReactions(): Promise<Reaction[] | null> {
+        return await this.query("SELECT * FROM venel.reactions");
+    }
+
+    async getReactionsForMessage(id: Id) {
+        return await this.query("SELECT r.content, r.id FROM venel.reactions r INNER JOIN venel.messageReactions mr ON r.id = mr.reactionId WHERE mr.messageId = ?", [id]);
+    }
+
+    async createReaction(content: string, groupId: Id, identifier: string) {
+        await this.query("INSERT INTO venel.reactions (content, groupId, identifier) VALUES (?, ?, ?)", [content, groupId, identifier]);
+    }
+
+    async createReactionGroup(id: Id, display: string) {
+        await this.query("INSERT INTO venel.reactionGroups (id, display) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = id", [id, display]);
+    }
+
+    async getReactionGroups(): Promise<ReactionGroup[] | null> {
+        return await this.query("SELECT * FROM venel.reactionGroups");
     }
 }

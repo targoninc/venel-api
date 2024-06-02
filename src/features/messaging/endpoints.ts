@@ -62,6 +62,17 @@ export class MessagingEndpoints {
         }
     }
 
+    static getAvailableReactions(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const reactions = await db.getAvailableReactions();
+            if (!reactions) {
+                res.json([]);
+                return;
+            }
+            res.json(reactions);
+        }
+    }
+
     static deleteMessage(db: MariaDbDatabase) {
         return async (req: Request, res: Response) => {
             const user = req.user as User;
@@ -231,6 +242,17 @@ export class MessagingEndpoints {
             res.json(users.map(u => safeUser(u)));
         }
 
+    }
+
+    static getReactionGroups(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const groups = await db.getReactionGroups();
+            if (!groups) {
+                res.json([]);
+                return;
+            }
+            res.json(groups);
+        }
     }
 }
 

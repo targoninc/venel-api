@@ -4,6 +4,7 @@ import {CLI} from "../tooling/CLI";
 import {PermissionsList} from "../enums/permissionsList";
 import {DefaultRoles} from "../enums/defaultRoles";
 import {MariaDbDatabase} from "./database/mariaDbDatabase";
+import {defaultReactionGroups, defaultReactions} from "../enums/defaultReactions";
 
 export class DatabaseFeature {
     static async enable(__dirname: string) {
@@ -31,6 +32,8 @@ export class DatabaseFeature {
         CLI.info("Creating default data...");
         await DatabaseFeature.createDefaultPermissions(db);
         await DatabaseFeature.createDefaultRoles(db);
+        await DatabaseFeature.createDefaultReactionGroups(db);
+        await DatabaseFeature.createDefaultReactions(db);
     }
 
     static async createDefaultPermissions(db: MariaDbDatabase) {
@@ -51,6 +54,18 @@ export class DatabaseFeature {
                                 ON DUPLICATE KEY UPDATE roleId = roleId`,
                     [role.name, permission.name]);
             }
+        }
+    }
+
+    static async createDefaultReactionGroups(db: MariaDbDatabase) {
+        for (const reactionGroup of defaultReactionGroups) {
+            await db.createReactionGroup(reactionGroup.id, reactionGroup.name);
+        }
+    }
+
+    static async createDefaultReactions(db: MariaDbDatabase) {
+        for (const reaction of defaultReactions) {
+            await db.createReaction(reaction.content, reaction.groupId, reaction.identifier);
         }
     }
 }

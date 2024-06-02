@@ -835,6 +835,54 @@ export const swaggerOptions = {
                     ]
                 }
             },
+            "/api/reactions/getAvailableReactions": {
+                get: {
+                    summary: "Get available reactions",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Get available reactions",
+                    responses: {
+                        200: {
+                            description: "Reactions retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "array",
+                                        items: {
+                                            type: "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/api/reactions/getReactionGroups": {
+                get: {
+                    summary: "Get reaction groups",
+                    tags: [
+                        "Messaging"
+                    ],
+                    description: "Get reaction groups",
+                    responses: {
+                        200: {
+                            description: "Reaction groups retrieved successfully",
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: "array",
+                                        items: {
+                                            type: "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "/api/messaging/sendMessage": {
                 post: {
                     security: [

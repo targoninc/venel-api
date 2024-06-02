@@ -144,6 +144,7 @@ export class LiveFeature {
             return;
         }
         message.sender = safeUser(sender);
+        message.reactions = await db.getReactionsForMessage(message.id);
 
         const payload = JSON.stringify({
             type: "message",

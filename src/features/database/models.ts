@@ -66,9 +66,16 @@ export interface Permission {
   'name': string;
 }
 
+export interface ReactionGroup {
+  'display': string;
+  'id': Id;
+}
+
 export interface Reaction {
   'content': string | null;
+  'groupId': Id;
   'id': Id;
+  'identifier': string | null;
 }
 
 export interface RolePermission {

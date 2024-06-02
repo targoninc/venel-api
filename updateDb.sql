@@ -40,11 +40,23 @@ create table if not exists venel.permissions
         unique (name)
 );
 
+create table if not exists venel.reactionGroups
+(
+    id      bigint                                not null
+        primary key,
+    display varchar(128) default 'Reaction group' not null
+);
+
 create table if not exists venel.reactions
 (
-    id      bigint auto_increment
+    id         bigint auto_increment
         primary key,
-    content varchar(255) null
+    groupId    bigint                      not null,
+    content    varchar(255)                null,
+    identifier varchar(64) default 'emoji' null,
+    constraint reactions_reactionGroups_id_fk
+        foreign key (groupId) references venel.reactionGroups (id)
+            on delete cascade
 );
 
 create table if not exists venel.roles
@@ -77,7 +89,7 @@ create table if not exists venel.users
         primary key,
     username       varchar(255)                           not null,
     phoneNumber    varchar(255)                           null,
-    avatar mediumblob null,
+    avatar         mediumblob                             null,
     passwordHash   varchar(64)                            not null,
     displayname    varchar(255)                           null,
     description    text                                   null,
@@ -92,8 +104,8 @@ create table if not exists venel.users
 
 create table if not exists venel.bridgedUsers
 (
-    instanceId bigint not null,
-    userId     bigint not null,
+    instanceId bigint                               not null,
+    userId     bigint                               not null,
     createdAt  datetime default current_timestamp() not null,
     primary key (instanceId, userId),
     constraint bridgedUsers_bridgeInstances_id_fk

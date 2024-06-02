@@ -11,6 +11,11 @@ export class MessagingFeature {
         app.delete(`${mPrefix}/deleteMessage`, AuthActions.checkAuthenticated, MessagingEndpoints.deleteMessage(db));
         app.patch(`${mPrefix}/editMessage`, AuthActions.checkAuthenticated, MessagingEndpoints.editMessage(db));
 
+        // Reactions
+        const rPrefix = "/api/reactions";
+        app.get(`${rPrefix}/getAvailableReactions`, MessagingEndpoints.getAvailableReactions(db));
+        app.get(`${rPrefix}/getReactionGroups`, MessagingEndpoints.getReactionGroups(db));
+
         // Users
         const uPrefix = "/api/users";
         app.get(`${uPrefix}/search`, AuthActions.checkAuthenticated, MessagingEndpoints.searchUsers(db));
