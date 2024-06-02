@@ -62,7 +62,9 @@ export class BridgingEndpoints {
                 res.status(500).send("Failed to add instance.");
                 return;
             }
-            res.send(instance);
+            let out = instance as ViewableInstance;
+            out.bridgedUsers = await db.getBridgesUsersForInstance(instance.id);
+            res.send(out);
         }
     }
 
