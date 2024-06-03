@@ -313,4 +313,8 @@ WHERE ur.userId = ?`, [userId]);
     async addReaction(userId: Id, messageId: Id, reactionId: Id) {
         await this.query("INSERT INTO venel.messageReactions (userId, messageId, reactionId) VALUES (?, ?, ?)", [userId, messageId, reactionId]);
     }
+
+    async removeReaction(userId: Id, messageId: Id, reactionId: Id) {
+        await this.query("DELETE FROM venel.messageReactions WHERE userId = ? AND messageId = ? AND reactionId = ?", [userId, messageId, reactionId]);
+    }
 }

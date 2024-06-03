@@ -183,7 +183,7 @@ create table if not exists venel.messageReactions
     messageId  bigint not null,
     reactionId bigint not null,
     userId     bigint not null,
-    primary key (messageId, reactionId),
+    primary key (messageId, reactionId, userId),
     constraint messageReactions_ibfk_1
         foreign key (messageId) references venel.messages (id)
             on delete cascade,
