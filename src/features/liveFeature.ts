@@ -54,6 +54,9 @@ export class LiveFeature {
                     case "message":
                         await LiveFeature.sendMessage(data, ws.user, clients, ws, db);
                         break;
+                    case "addReaction":
+                        await LiveFeature.addReaction(data, ws.user, clients, ws, db);
+                        break;
                     case "updateAvatar":
                         await LiveFeature.updateAvatar(userMap, data, ws.user, clients, ws, db);
                         break;
@@ -157,6 +160,52 @@ export class LiveFeature {
             }
 
             const invalid = await MessagingEndpoints.checkChannelAccess(db, ws.user, channelId);
+            if (invalid !== null) {
+                continue;
+            }
+            ws.send(payload);
+        }
+    }
+
+    static async addReaction(data: any, user: User, clients: Set<UserWebSocket>, client: UserWebSocket, db: MariaDbDatabase) {
+        const messageId = data.messageId;
+        if (!messageId) {
+            client.send(JSON.stringify({error: "Message ID is required"}));
+            return;
+        }
+
+        const message = await db.getMessageById(messageId);
+        if (!message) {
+            client.send(JSON.stringify({error: "Message not found"}));
+            return;
+        }
+
+        const invalid = await MessagingEndpoints.checkChannelAccess(db, user, message.channelId);
+        if (invalid !== null) {
+            client.send(JSON.stringify({error: invalid}));
+            return;
+        }
+
+        const reactionId = data.reactionId;
+        if (!reactionId) {
+            client.send(JSON.stringify({error: "Reaction is required"}));
+            return;
+        }
+
+        await db.addReaction(user.id, messageId, reactionId);
+        const payload = JSON.stringify({
+            type: "addReaction",
+            messageId,
+            reactionId,
+            userId: user.id
+        });
+        CLI.debug(`Propagating reaction from ${user.id} to ${clients.size} clients.`);
+        for (const ws of clients) {
+            if (ws.readyState !== ws.OPEN) {
+                continue;
+            }
+
+            const invalid = await MessagingEndpoints.checkChannelAccess(db, ws.user, message.channelId);
             if (invalid !== null) {
                 continue;
             }

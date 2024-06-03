@@ -1,6 +1,6 @@
 import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {Request, Response} from "express";
-import {ChannelMember, User} from "../database/models";
+import {ChannelMember, Reaction, User} from "../database/models";
 import {CLI} from "../../tooling/CLI";
 import {PermissionsList} from "../../enums/permissionsList";
 import {safeUser} from "../authentication/actions";
@@ -204,6 +204,7 @@ export class MessagingEndpoints {
 
                 const sender = users.get(message.senderId);
                 message.sender = safeUser(sender as User);
+                message.reactions = await db.getReactionsForMessage(message.id);
             }
             res.json(messages);
         }

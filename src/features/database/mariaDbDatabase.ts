@@ -294,8 +294,8 @@ WHERE ur.userId = ?`, [userId]);
         return await this.query("SELECT * FROM venel.reactions");
     }
 
-    async getReactionsForMessage(id: Id) {
-        return await this.query("SELECT r.content, r.id FROM venel.reactions r INNER JOIN venel.messageReactions mr ON r.id = mr.reactionId WHERE mr.messageId = ?", [id]);
+    async getReactionsForMessage(id: Id): Promise<Reaction[]> {
+        return await this.query("SELECT r.id, mr.userId FROM venel.reactions r INNER JOIN venel.messageReactions mr ON r.id = mr.reactionId WHERE mr.messageId = ?", [id]);
     }
 
     async createReaction(content: string, groupId: Id, identifier: string) {
@@ -308,5 +308,9 @@ WHERE ur.userId = ?`, [userId]);
 
     async getReactionGroups(): Promise<ReactionGroup[] | null> {
         return await this.query("SELECT * FROM venel.reactionGroups");
+    }
+
+    async addReaction(userId: Id, messageId: Id, reactionId: Id) {
+        await this.query("INSERT INTO venel.messageReactions (userId, messageId, reactionId) VALUES (?, ?, ?)", [userId, messageId, reactionId]);
     }
 }
