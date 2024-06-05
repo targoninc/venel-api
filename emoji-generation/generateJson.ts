@@ -3,7 +3,8 @@ import path from "path";
 import {Reaction, ReactionGroup} from "../src/features/database/models";
 
 const source = "emojis.json";
-const target = "emojis_db.json";
+const reactionGroupsTarget = "../src/enums/reactionGroups.json";
+const reactionsTarget = "../src/enums/reactions.json";
 
 const emojis = JSON.parse(fs.readFileSync(source, "utf8"));
 
@@ -18,7 +19,7 @@ const groups = groupNames.map((groupName, index) => {
     };
 });
 
-fs.writeFileSync("groups.json", JSON.stringify(groups, null, 2));
+fs.writeFileSync(reactionGroupsTarget, JSON.stringify(groups, null, 2));
 
 let reactions = [];
 for (const group of groups) {
@@ -31,11 +32,15 @@ for (const group of groups) {
                 content: reaction.emoji,
                 identifier: reaction.name
                     .replaceAll(" ", "_")
+                    .replaceAll("-", "_")
                     .replaceAll(":", "")
+                    .replaceAll("⊛_", "")
                     .toLowerCase(),
             });
         }
     }
 }
 
-fs.writeFileSync(target, JSON.stringify(reactions, null, 2));
+console.log(`${reactions.length} reactions generated.`);
+
+fs.writeFileSync(reactionsTarget, JSON.stringify(reactions, null, 2));

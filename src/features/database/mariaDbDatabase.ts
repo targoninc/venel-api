@@ -299,7 +299,7 @@ WHERE ur.userId = ?`, [userId]);
     }
 
     async createReaction(content: string, groupId: Id, identifier: string) {
-        await this.query("INSERT INTO venel.reactions (content, groupId, identifier) VALUES (?, ?, ?)", [content, groupId, identifier]);
+        await this.query("INSERT INTO venel.reactions (content, groupId, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE content = content", [content, groupId, identifier]);
     }
 
     async createReactionGroup(id: Id, display: string) {

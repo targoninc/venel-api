@@ -4,7 +4,7 @@ import {CLI} from "../tooling/CLI";
 import {PermissionsList} from "../enums/permissionsList";
 import {DefaultRoles} from "../enums/defaultRoles";
 import {MariaDbDatabase} from "./database/mariaDbDatabase";
-import {defaultReactionGroups, defaultReactions} from "../enums/defaultReactions";
+import {Reaction, ReactionGroup} from "./database/models";
 
 export class DatabaseFeature {
     static async enable(__dirname: string) {
@@ -24,16 +24,22 @@ export class DatabaseFeature {
             }
             await db.query(query.trim());
         }
-        await DatabaseFeature.createDefaultData(db);
+        try {
+            await DatabaseFeature.createDefaultData(db, __dirname);
+        } catch (e: any) {
+            CLI.error("Failed to create default data.");
+            CLI.error(e);
+            return;
+        }
         CLI.success("Database is up to date.");
     }
 
-    static async createDefaultData(db: MariaDbDatabase) {
+    static async createDefaultData(db: MariaDbDatabase, __dirname: string) {
         CLI.info("Creating default data...");
         await DatabaseFeature.createDefaultPermissions(db);
         await DatabaseFeature.createDefaultRoles(db);
-        await DatabaseFeature.createDefaultReactionGroups(db);
-        await DatabaseFeature.createDefaultReactions(db);
+        await DatabaseFeature.createDefaultReactionGroups(db, __dirname);
+        await DatabaseFeature.createDefaultReactions(db, __dirname);
     }
 
     static async createDefaultPermissions(db: MariaDbDatabase) {
@@ -57,14 +63,22 @@ export class DatabaseFeature {
         }
     }
 
-    static async createDefaultReactionGroups(db: MariaDbDatabase) {
-        for (const reactionGroup of defaultReactionGroups) {
-            await db.createReactionGroup(reactionGroup.id, reactionGroup.name);
+    static async createDefaultReactionGroups(db: MariaDbDatabase, __dirname: string) {
+        const groupsContent = fs.readFileSync(path.join(__dirname, "../src/enums/reactionGroups.json"), "utf8");
+        const groups = JSON.parse(groupsContent) as ReactionGroup[];
+        for (const reactionGroup of groups) {
+            await db.createReactionGroup(reactionGroup.id, reactionGroup.display);
         }
     }
 
-    static async createDefaultReactions(db: MariaDbDatabase) {
-        for (const reaction of defaultReactions) {
+    static async createDefaultReactions(db: MariaDbDatabase, __dirname: string) {
+        const reactionsContent = fs.readFileSync(path.join(__dirname, "../src/enums/reactions.json"), "utf8");
+        const reactions = JSON.parse(reactionsContent) as Reaction[];
+        for (const reaction of reactions) {
+            if (!reaction.content || (reaction.groupId === null || reaction.groupId === undefined) || !reaction.identifier) {
+                CLI.warning(`Invalid reaction: ${JSON.stringify(reaction)}`);
+                continue;
+            }
             await db.createReaction(reaction.content, reaction.groupId, reaction.identifier);
         }
     }

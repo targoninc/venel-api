@@ -195,7 +195,12 @@ export class LiveFeature {
             return;
         }
 
-        await db.addReaction(user.id, messageId, reactionId);
+        try {
+            await db.addReaction(user.id, messageId, reactionId);
+        } catch (e: any) {
+            client.send(JSON.stringify({error: e.toString()}));
+            return;
+        }
         const payload = JSON.stringify({
             type: "addReaction",
             messageId,

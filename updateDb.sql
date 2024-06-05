@@ -44,16 +44,20 @@ create table if not exists venel.reactionGroups
 (
     id      bigint                                not null
         primary key,
-    display varchar(128) default 'Reaction group' not null
+    display varchar(128) default 'Reaction group' not null,
+    constraint reactionGroups_pk
+        unique (display)
 );
 
 create table if not exists venel.reactions
 (
     id         bigint auto_increment
         primary key,
-    groupId    bigint                      not null,
-    content    varchar(255)                null,
-    identifier varchar(64) default 'emoji' null,
+    groupId    bigint                       not null,
+    content    varchar(255)                 null,
+    identifier varchar(128) default 'emoji' null,
+    constraint reactions_pk
+        unique (identifier),
     constraint reactions_reactionGroups_id_fk
         foreign key (groupId) references venel.reactionGroups (id)
             on delete cascade

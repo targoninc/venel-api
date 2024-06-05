@@ -9,7 +9,8 @@
     "start": "node dist/main.js",
     "build:main": "babel -x .ts -d dist src",
     "build:types": "tsc",
-    "models-from-database": "npx @rmp135/sql-ts -c database-type-generation/sql-to-ts.json"
+    "models-from-database": "npx @rmp135/sql-ts -c database-type-generation/sql-to-ts.json",
+    "parse-reactions": "cd emoji-generation && bun generateJson.ts"
   },
   "author": "",
   "license": "ISC",
