@@ -1,0 +1,42 @@
+[
+  {
+    "id": 0,
+    "display": "Smileys & Emotion"
+  },
+  {
+    "id": 1,
+    "display": "People & Body"
+  },
+  {
+    "id": 2,
+    "display": "Component"
+  },
+  {
+    "id": 3,
+    "display": "Animals & Nature"
+  },
+  {
+    "id": 4,
+    "display": "Food & Drink"
+  },
+  {
+    "id": 5,
+    "display": "Travel & Places"
+  },
+  {
+    "id": 6,
+    "display": "Activities"
+  },
+  {
+    "id": 7,
+    "display": "Objects"
+  },
+  {
+    "id": 8,
+    "display": "Symbols"
+  },
+  {
+    "id": 9,
+    "display": "Flags"
+  }
+]
