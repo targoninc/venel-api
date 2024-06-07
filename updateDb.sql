@@ -221,3 +221,15 @@ create table if not exists venel.userRoles
             on delete cascade
 );
 
+create table if not exists venel.userSettings
+(
+    userId     bigint                               not null,
+    settingKey varchar(32)                          not null,
+    value      varchar(32)                          not null,
+    createdAt  datetime default current_timestamp() not null,
+    updatedAt  datetime default current_timestamp() not null on update current_timestamp(),
+    primary key (settingKey, userId),
+    constraint userSettings_users_id_fk
+        foreign key (userId) references venel.users (id)
+            on delete cascade
+);

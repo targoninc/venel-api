@@ -1,5 +1,4 @@
 import fs from "fs";
-import path from "path";
 import {Reaction, ReactionGroup} from "../src/features/database/models";
 
 const source = "emojis.json";

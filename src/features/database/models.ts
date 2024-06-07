@@ -48,6 +48,7 @@ export interface ImageAttachment {
 export interface MessageReaction {
   'messageId': Id;
   'reactionId': Id;
+    'userId': Id;
 }
 
 export interface Message {
@@ -109,5 +110,13 @@ export interface User {
   'registrationIp': string | null;
   'updatedAt': Date;
   'username': string;
+}
+
+export interface UserSetting {
+    'createdAt': Date;
+    'settingKey': string;
+    'updatedAt': Date;
+    'userId': Id;
+    'value': string;
 }
 
