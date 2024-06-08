@@ -53,6 +53,7 @@ export class AuthenticationFeature {
         app.patch(`${prefix}/updateUser`, AuthActions.checkAuthenticated, AuthEndpoints.updateUser(db));
         app.post(`${prefix}/updateAvatar`, AuthActions.checkAuthenticated, AuthEndpoints.updateAvatar(db));
         app.delete(`${prefix}/deleteUser`, AuthActions.checkAuthenticated, AuthEndpoints.deleteUser(db));
+        app.patch(`${prefix}/updateSetting`, AuthActions.checkAuthenticated, AuthEndpoints.updateSetting(db));
         app.get(`${prefix}/getConnectionSid`, AuthActions.checkAuthenticated, AuthEndpoints.getConnectionSid());
 
         // Permissions and roles

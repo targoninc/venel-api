@@ -10,7 +10,7 @@ import {
     Reaction,
     ReactionGroup,
     Role,
-    User
+    User, UserSetting
 } from "./models";
 import {SafeUser} from "../../models/safeUser";
 
@@ -316,5 +316,13 @@ WHERE ur.userId = ?`, [userId]);
 
     async removeReaction(userId: Id, messageId: Id, reactionId: Id) {
         await this.query("DELETE FROM venel.messageReactions WHERE userId = ? AND messageId = ? AND reactionId = ?", [userId, messageId, reactionId]);
+    }
+
+    async updateUserSetting(id: Id, setting: string, value: string) {
+        await this.query("INSERT INTO venel.userSettings (userId, settingKey, value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value = ?", [id, setting, value, value]);
+    }
+
+    async getUserSettings(id: Id): Promise<UserSetting[] | null> {
+        return await this.query("SELECT * FROM venel.userSettings WHERE userId = ?", [id]);
     }
 }

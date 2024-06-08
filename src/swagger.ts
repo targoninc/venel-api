@@ -377,6 +377,53 @@ export const swaggerOptions = {
                     ]
                 }
             },
+            "/api/auth/updateSetting": {
+                patch: {
+                    summary: "Update a user's setting",
+                    tags: [
+                        "User Management"
+                    ],
+                    description: "Update a user's setting",
+                    requestBody: {
+                        description: "Setting's entity",
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    required: [
+                                        "setting",
+                                        "value"
+                                    ],
+                                    properties: {
+                                        setting: {
+                                            type: "string",
+                                            description: "The setting to update"
+                                        },
+                                        value: {
+                                            type: "string",
+                                            description: "The new value for the setting"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        200: {
+                            description: "Setting updated successfully"
+                        },
+                        401: {
+                            description: "Unauthorized"
+                        }
+                    },
+                    security: [
+                        {
+                            cookieAuth: []
+                        }
+                    ]
+                }
+            },
             "/api/auth/roles": {
                 get: {
                     summary: "Get a list of roles",

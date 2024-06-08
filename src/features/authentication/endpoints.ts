@@ -11,6 +11,7 @@ import Jimp from "jimp";
 import {OwnUser} from "../../models/ownUser";
 import {AdminPanelUser} from "../../models/adminPanelUser";
 import {DefaultRoles} from "../../enums/defaultRoles";
+import {Settings} from "../../enums/settings";
 
 export class AuthEndpoints {
     static logout(): (arg0: Request, arg1: Response) => void {
@@ -44,6 +45,14 @@ export class AuthEndpoints {
                 permissions = [];
             }
             user.permissions = permissions;
+            const rows = await db.getUserSettings(user.id);
+            if (rows) {
+                // @ts-ignore
+                user.settings = {};
+                for (const row of rows) {
+                    user.settings[row.settingKey] = row.value;
+                }
+            }
 
             res.send({ user });
         };
@@ -518,6 +527,33 @@ export class AuthEndpoints {
 
             await db.deleteUser(parseInt(userId));
             res.send({message: "User deleted successfully"});
+        }
+    }
+
+    static updateSetting(db: MariaDbDatabase) {
+        return async (req: Request, res: Response) => {
+            const user = req.user as User;
+            let {setting, value} = req.body;
+            if (!setting || value === null || value === undefined) {
+                res.status(400).send({error: "setting and value are required"});
+                return;
+            }
+
+            if (!Object.values(Settings).includes(setting)) {
+                res.status(400).send({error: `Invalid setting, must be one of ${Object.values(Settings).join(", ")}`});
+                return;
+            }
+
+            if (value === true) {
+                value = "true";
+            }
+            if (value === false) {
+                value = "false";
+            }
+
+            CLI.debug(`Updating setting ${setting} to ${value} for user ${user.id}`);
+            await db.updateUserSetting(user.id, setting, value);
+            res.send({message: "Setting updated successfully"});
         }
     }
 
