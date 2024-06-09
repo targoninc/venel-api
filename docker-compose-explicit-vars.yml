@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+      - "8912:8912"
+    depends_on:
+      - db
+    environment:
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - ALLOW_FREE_REGISTRATION=${ALLOW_FREE_REGISTRATION}
+      - UI_DEPLOYMENT_URL=${UI_DEPLOYMENT_URL}
+      - WEBSOCKET_URL=${WEBSOCKET_URL}
+
+  db:
+    container_name: mariadb
+    image: mariadb:10.5
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
