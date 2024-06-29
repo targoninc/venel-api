@@ -1,6 +1,7 @@
 import mariadb from 'mariadb';
 import {CLI} from "../../tooling/CLI";
 import {
+    Attachment,
     BridgeInstance,
     Channel,
     ChannelMember,
@@ -177,6 +178,10 @@ WHERE ur.userId = ?`, [userId]);
         return await this.query("SELECT * FROM venel.messages m WHERE channelId = ? ORDER BY createdAt DESC LIMIT 100 OFFSET ?", [channelId, offset]);
     }
 
+    async getAttachmentsForMessage(messageId: Id): Promise<Attachment[]> {
+        return await this.query("SELECT * FROM venel.attachments WHERE messageId = ?", [messageId]) ?? [];
+    }
+
     async deleteUser(id: Id) {
         await this.query("DELETE FROM venel.users WHERE id = ?", [id]);
     }
@@ -324,5 +329,9 @@ WHERE ur.userId = ?`, [userId]);
 
     async getUserSettings(id: Id): Promise<UserSetting[] | null> {
         return await this.query("SELECT * FROM venel.userSettings WHERE userId = ?", [id]);
+    }
+
+    async createAttachment(id: Id, type: string, data: Buffer | null) {
+        await this.query("INSERT INTO venel.attachments (messageId, type, data) VALUES (?, ?, ?)", [id, type, data]);
     }
 }

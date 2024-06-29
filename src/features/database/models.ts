@@ -4,10 +4,11 @@
 */
 export type Id = number;
 
-export interface AudioAttachment {
-  'binaryContent': Buffer | null;
+export interface Attachment {
+  'data': Buffer | null;
   'id': Id;
   'messageId': Id | null;
+  'type': string;
 }
 
 export interface BridgedUser {
@@ -39,16 +40,10 @@ export interface Channel {
   'updatedAt': Date;
 }
 
-export interface ImageAttachment {
-  'binaryContent': Buffer | null;
-  'id': Id;
-  'messageId': Id | null;
-}
-
 export interface MessageReaction {
   'messageId': Id;
   'reactionId': Id;
-    'userId': Id;
+  'userId': Id;
 }
 
 export interface Message {
@@ -113,10 +108,10 @@ export interface User {
 }
 
 export interface UserSetting {
-    'createdAt': Date;
-    'settingKey': string;
-    'updatedAt': Date;
-    'userId': Id;
-    'value': string;
+  'createdAt': Date;
+  'settingKey': string;
+  'updatedAt': Date;
+  'userId': Id;
+  'value': string;
 }
 

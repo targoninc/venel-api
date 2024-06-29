@@ -205,6 +205,7 @@ export class MessagingEndpoints {
                 const sender = users.get(message.senderId);
                 message.sender = safeUser(sender as User);
                 message.reactions = await db.getReactionsForMessage(message.id);
+                message.attachments = await db.getAttachmentsForMessage(message.id);
             }
             res.json(messages);
         }

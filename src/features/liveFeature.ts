@@ -2,7 +2,7 @@ import {MariaDbDatabase} from "./database/mariaDbDatabase";
 import {ServerOptions, WebSocketServer} from "ws";
 import {MessagingEndpoints} from "./messaging/endpoints";
 import {CLI} from "../tooling/CLI";
-import {User} from "./database/models";
+import {Attachment, User} from "./database/models";
 import {Application} from "express";
 import {createServer} from "http";
 import {UserWebSocket} from "./live/UserWebSocket";
@@ -47,9 +47,6 @@ export class LiveFeature {
 
             ws.on("message", async (message: any) => {
                 const data = JSON.parse(message.toString());
-                if (data.type !== "ping") {
-                    CLI.debug("Received message: " + JSON.stringify(data, null, 2));
-                }
                 switch (data.type) {
                     case "message":
                         await LiveFeature.sendMessage(data, ws.user, clients, ws, db);
@@ -77,6 +74,12 @@ export class LiveFeature {
                         break;
                     case "createChannelDm":
                         await LiveFeature.createChannelDm(data, ws.user, clients, ws, db);
+                        break;
+                    case "ping":
+                        CLI.debug("Received ping");
+                        break;
+                    default:
+                        CLI.debug("Received unknown message: " + JSON.stringify(data, null, 2));
                         break;
                 }
             });
@@ -144,13 +147,42 @@ export class LiveFeature {
             client.send(JSON.stringify({error: "Message not found"}));
             return;
         }
+
+        let attachments: Attachment[] = [];
+        if (data.attachments) {
+            for (const attachment of data.attachments) {
+                if (!attachment.type) {
+                    client.send(JSON.stringify({error: "Attachment type is required"}));
+                    return;
+                }
+                if (!attachment.data) {
+                    client.send(JSON.stringify({error: "Attachment data is required"}));
+                    return;
+                }
+                attachments.push({
+                    messageId: message.id,
+                    id: -1,
+                    type: attachment.type,
+                    data: Buffer.from(attachment.data, "base64")
+                });
+            }
+
+            CLI.debug(`Creating ${attachments.length} attachments`);
+            for (const attachment of attachments) {
+                CLI.debug(`Creating attachment with length ${attachment.data?.length} of type ${attachment.type}`);
+                await db.createAttachment(message.id, attachment.type, attachment.data);
+            }
+        }
+
         const sender = await db.getUserById(user.id);
         if (!sender) {
             client.send(JSON.stringify({error: "Sender not found"}));
             return;
         }
+
         message.sender = safeUser(sender);
-        message.reactions = await db.getReactionsForMessage(message.id);
+        message.reactions = [];
+        message.attachments = attachments;
 
         const payload = JSON.stringify({
             type: "message",
