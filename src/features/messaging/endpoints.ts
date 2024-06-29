@@ -1,12 +1,13 @@
 import {MariaDbDatabase} from "../database/mariaDbDatabase";
 import {Request, Response} from "express";
-import {ChannelMember, Reaction, User} from "../database/models";
+import {ChannelMember, User} from "../database/models";
 import {CLI} from "../../tooling/CLI";
 import {PermissionsList} from "../../enums/permissionsList";
 import {safeUser} from "../authentication/actions";
 import {ReceivableMessage} from "../../models/receivableMessage";
 import {UiChannel} from "../../models/uiChannel";
 import {ChannelProcessor} from "./channelProcessor";
+import fs from "fs";
 
 export class MessagingEndpoints {
     static async checkChannelAccess(db: MariaDbDatabase, user: User, channelId: number) {
@@ -102,6 +103,12 @@ export class MessagingEndpoints {
                 return;
             }
             await db.deleteMessage(messageId);
+
+            const messageFolder = process.env.FILE_FOLDER + "/" + messageId;
+            if (fs.existsSync(messageFolder)) {
+                fs.rmSync(messageFolder, {recursive: true, force: true});
+            }
+
             CLI.success(`Message ${messageId} deleted by user ${user.id}.`);
             res.json({message: "Message deleted"});
         }

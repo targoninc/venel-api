@@ -6,13 +6,16 @@ import {Attachment, User} from "./database/models";
 import {Application} from "express";
 import {createServer} from "http";
 import {UserWebSocket} from "./live/UserWebSocket";
-import {avatarUser, safeUser} from "./authentication/actions";
+import {safeUser} from "./authentication/actions";
 import {PermissionsList} from "../enums/permissionsList";
 import {LiveEndpoints} from "./live/endpoints";
 import {ReceivableMessage} from "../models/receivableMessage";
 import Jimp from "jimp";
 import {UiChannel} from "../models/uiChannel";
 import {ChannelProcessor} from "./messaging/channelProcessor";
+import {hashSync} from "bcryptjs";
+import fs from "fs";
+import {WritableAttachment} from "../models/writableAttachment";
 
 export class LiveFeature {
     static enable(app: Application, userMap: Map<string, User>, db: MariaDbDatabase) {
@@ -148,7 +151,7 @@ export class LiveFeature {
             return;
         }
 
-        let attachments: Attachment[] = [];
+        let attachments: WritableAttachment[] = [];
         if (data.attachments) {
             for (const attachment of data.attachments) {
                 if (!attachment.type) {
@@ -163,14 +166,33 @@ export class LiveFeature {
                     messageId: message.id,
                     id: -1,
                     type: attachment.type,
-                    data: Buffer.from(attachment.data, "base64")
+                    filename: attachment.filename,
+                    data: attachment.data
                 });
             }
 
             CLI.debug(`Creating ${attachments.length} attachments`);
+            const fileFolder = process.env.FILE_FOLDER;
+            if (!fileFolder) {
+                client.send(JSON.stringify({error: "FILE_FOLDER is not set"}));
+                return;
+            }
+            if (!fs.existsSync(fileFolder)) {
+                fs.mkdirSync(fileFolder);
+            }
+            const messageFolder = fileFolder + "/" + message.id;
+            if (attachments.length > 0) {
+                fs.mkdirSync(messageFolder);
+            }
             for (const attachment of attachments) {
-                CLI.debug(`Creating attachment with length ${attachment.data?.length} of type ${attachment.type}`);
-                await db.createAttachment(message.id, attachment.type, attachment.data);
+                if (attachment.data) {
+                    await db.createAttachment(message.id, attachment.type, attachment.filename);
+                    const attachmentPath = messageFolder + "/" + attachment.filename;
+                    // @ts-ignore
+                    const data = Buffer.from(attachment.data, "base64");
+                    fs.writeFileSync(attachmentPath, data);
+                    CLI.debug(`Created attachment with length ${attachment.data?.length} of type ${attachment.type} at ${attachmentPath}`);
+                }
             }
         }
 
@@ -182,7 +204,10 @@ export class LiveFeature {
 
         message.sender = safeUser(sender);
         message.reactions = [];
-        message.attachments = attachments;
+        message.attachments = attachments.map(a => {
+            a.data = null;
+            return a;
+        });
 
         const payload = JSON.stringify({
             type: "message",
@@ -366,6 +391,11 @@ export class LiveFeature {
         }
 
         await db.deleteMessage(messageId);
+
+        const messageFolder = process.env.FILE_FOLDER + "/" + messageId;
+        if (fs.existsSync(messageFolder)) {
+            fs.rmSync(messageFolder, {recursive: true, force: true});
+        }
 
         const payload = JSON.stringify({
             type: "removeMessage",

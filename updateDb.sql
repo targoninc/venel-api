@@ -156,11 +156,11 @@ create table if not exists venel.messages
 
 create table if not exists venel.attachments
 (
-    id            bigint auto_increment
+    id        bigint auto_increment
         primary key,
-    messageId     bigint                     null,
-    type          varchar(16) default 'file' not null,
-    data          mediumblob                 null,
+    messageId bigint                     null,
+    type      varchar(16) default 'file' not null,
+    filename  text                       not null,
     constraint attachments_ibfk_1
         foreign key (messageId) references venel.messages (id)
             on delete cascade
@@ -168,6 +168,34 @@ create table if not exists venel.attachments
 
 create index if not exists messageId
     on venel.attachments (messageId);
+
+create table if not exists venel.audioAttachments
+(
+    id            bigint auto_increment
+        primary key,
+    messageId     bigint     null,
+    binaryContent mediumblob null,
+    constraint audioAttachments_ibfk_1
+        foreign key (messageId) references venel.messages (id)
+            on delete cascade
+);
+
+create index if not exists messageId
+    on venel.audioAttachments (messageId);
+
+create table if not exists venel.imageAttachments
+(
+    id            bigint auto_increment
+        primary key,
+    messageId     bigint     null,
+    binaryContent mediumblob null,
+    constraint imageAttachments_ibfk_1
+        foreign key (messageId) references venel.messages (id)
+            on delete cascade
+);
+
+create index if not exists messageId
+    on venel.imageAttachments (messageId);
 
 create table if not exists venel.messageReactions
 (

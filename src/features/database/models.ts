@@ -5,10 +5,16 @@
 export type Id = number;
 
 export interface Attachment {
-  'data': Buffer | null;
+  'filename': string;
   'id': Id;
   'messageId': Id | null;
   'type': string;
+}
+
+export interface AudioAttachment {
+  'binaryContent': Buffer | null;
+  'id': Id;
+  'messageId': Id | null;
 }
 
 export interface BridgedUser {
@@ -38,6 +44,12 @@ export interface Channel {
   'name': string | null;
   'type': string;
   'updatedAt': Date;
+}
+
+export interface ImageAttachment {
+  'binaryContent': Buffer | null;
+  'id': Id;
+  'messageId': Id | null;
 }
 
 export interface MessageReaction {
