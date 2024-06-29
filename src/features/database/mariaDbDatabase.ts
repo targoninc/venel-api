@@ -339,4 +339,9 @@ WHERE ur.userId = ?`, [userId]);
         const rows = await this.query("SELECT * FROM venel.attachments WHERE messageId = ? AND filename = ?", [messageId, name]);
         return rows[0] ?? null;
     }
+
+    async getChannelByMessageId(messageId: Id) {
+        const rows = await this.query("SELECT * FROM venel.channels WHERE id IN (SELECT channelId FROM venel.messages WHERE id = ?)", [messageId]);
+        return rows[0] ?? null;
+    }
 }

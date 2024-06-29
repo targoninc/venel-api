@@ -4,6 +4,7 @@ import {MariaDbDatabase} from "./database/mariaDbDatabase";
 import {MessagingEndpoints} from "./messaging/endpoints";
 import fs from "fs";
 import {CLI} from "../tooling/CLI";
+import {User} from "./database/models";
 
 export class MessagingFeature {
     static enable(app: Application, db: MariaDbDatabase) {
@@ -56,13 +57,27 @@ export class MessagingFeature {
                 res.status(404).send("Attachment not found");
                 return;
             }
+
+            const channel = await db.getChannelByMessageId(parseInt(messageId.toString()));
+            if (!channel) {
+                res.status(404).send("Channel not found");
+                return;
+            }
+
+            const user = req.user as User;
+            const invalid = await MessagingEndpoints.checkChannelAccess(db, user, channel.id);
+            if (invalid !== null) {
+                res.status(invalid.code).send(invalid.error);
+                return;
+            }
+
             CLI.debug(`Sending attachment ${attachmentPath}`);
             const stat = fs.statSync(attachmentPath);
             const messageAttachment = await db.getMessageAttachment(parseInt(messageId.toString()), filename.toString());
             res.setHeader("Content-Type", messageAttachment?.type ?? "application/octet-stream");
             res.setHeader("Content-Length", stat.size);
-            const base64 = fs.readFileSync(attachmentPath).toString("base64");
-            res.send(base64);
+            const stream = fs.createReadStream(attachmentPath);
+            stream.pipe(res);
         });
 
         return app;
