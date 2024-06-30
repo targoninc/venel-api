@@ -2,7 +2,7 @@ import {MariaDbDatabase} from "./database/mariaDbDatabase";
 import {ServerOptions, WebSocketServer} from "ws";
 import {MessagingEndpoints} from "./messaging/endpoints";
 import {CLI} from "../tooling/CLI";
-import {Attachment, User} from "./database/models";
+import {User} from "./database/models";
 import {Application} from "express";
 import {createServer} from "http";
 import {UserWebSocket} from "./live/UserWebSocket";
@@ -135,8 +135,8 @@ export class LiveFeature {
         }
 
         const text = data.text;
-        if (!text) {
-            client.send(JSON.stringify({error: "Text is required"}));
+        if (!text && (!data.attachments || data.attachments.length === 0)) {
+            client.send(JSON.stringify({error: "Text or a single attachment is required"}));
             return;
         }
 
