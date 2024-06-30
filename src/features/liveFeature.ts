@@ -13,7 +13,6 @@ import {ReceivableMessage} from "../models/receivableMessage";
 import Jimp from "jimp";
 import {UiChannel} from "../models/uiChannel";
 import {ChannelProcessor} from "./messaging/channelProcessor";
-import {hashSync} from "bcryptjs";
 import fs from "fs";
 import {WritableAttachment} from "../models/writableAttachment";
 
@@ -22,14 +21,17 @@ export class LiveFeature {
         app.get("/api/live/url", LiveEndpoints.getWebsocketEndpoint());
 
         const server = createServer(app);
+        const maxPayloadSizeMb = process.env.MAX_PAYLOAD_SIZE_MB ? parseInt(process.env.MAX_PAYLOAD_SIZE_MB) : 10;
         const wss = new WebSocketServer({
-            noServer: true
+            noServer: true,
+            maxPayload: maxPayloadSizeMb * 1024 * 1024
         } as ServerOptions);
 
         const clients = new Set<UserWebSocket>();
         wss.on("connection", (ws: any, info: { user: User }) => {
             ws.user = info.user;
             clients.add(ws);
+            ws.send(JSON.stringify({type: "maxPayloadSize", size: maxPayloadSizeMb}));
 
             ws.on("close", () => {
                 if (ws.user) {

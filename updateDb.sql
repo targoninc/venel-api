@@ -159,7 +159,7 @@ create table if not exists venel.attachments
     id        bigint auto_increment
         primary key,
     messageId bigint                     null,
-    type      varchar(16) default 'file' not null,
+    type      varchar(64) default 'file' not null,
     filename  text                       not null,
     constraint attachments_ibfk_1
         foreign key (messageId) references venel.messages (id)
