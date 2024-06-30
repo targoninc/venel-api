@@ -13,7 +13,6 @@ import {ReceivableMessage} from "../models/receivableMessage";
 import Jimp from "jimp";
 import {UiChannel} from "../models/uiChannel";
 import {ChannelProcessor} from "./messaging/channelProcessor";
-import fs from "fs";
 import {WritableAttachment} from "../models/writableAttachment";
 import {AttachmentProcessor} from "./messaging/attachmentProcessor";
 

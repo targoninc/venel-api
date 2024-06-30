@@ -7,7 +7,6 @@ import {safeUser} from "../authentication/actions";
 import {ReceivableMessage} from "../../models/receivableMessage";
 import {UiChannel} from "../../models/uiChannel";
 import {ChannelProcessor} from "./channelProcessor";
-import fs from "fs";
 import {AttachmentProcessor} from "./attachmentProcessor";
 
 export class MessagingEndpoints {
