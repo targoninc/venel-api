@@ -15,6 +15,7 @@ import {UiChannel} from "../models/uiChannel";
 import {ChannelProcessor} from "./messaging/channelProcessor";
 import fs from "fs";
 import {WritableAttachment} from "../models/writableAttachment";
+import {AttachmentProcessor} from "./messaging/attachmentProcessor";
 
 export class LiveFeature {
     static enable(app: Application, userMap: Map<string, User>, db: MariaDbDatabase) {
@@ -174,28 +175,7 @@ export class LiveFeature {
             }
 
             CLI.debug(`Creating ${attachments.length} attachments`);
-            const fileFolder = process.env.FILE_FOLDER;
-            if (!fileFolder) {
-                client.send(JSON.stringify({error: "FILE_FOLDER is not set"}));
-                return;
-            }
-            if (!fs.existsSync(fileFolder)) {
-                fs.mkdirSync(fileFolder);
-            }
-            const messageFolder = fileFolder + "/" + message.id;
-            if (attachments.length > 0) {
-                fs.mkdirSync(messageFolder);
-            }
-            for (const attachment of attachments) {
-                if (attachment.data) {
-                    await db.createAttachment(message.id, attachment.type, attachment.filename);
-                    const attachmentPath = messageFolder + "/" + attachment.filename;
-                    // @ts-ignore
-                    const data = Buffer.from(attachment.data, "base64");
-                    fs.writeFileSync(attachmentPath, data);
-                    CLI.debug(`Created attachment with length ${attachment.data?.length} of type ${attachment.type} at ${attachmentPath}`);
-                }
-            }
+            await AttachmentProcessor.saveAttachments(db, message.id, attachments);
         }
 
         const sender = await db.getUserById(user.id);

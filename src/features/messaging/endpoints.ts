@@ -8,6 +8,7 @@ import {ReceivableMessage} from "../../models/receivableMessage";
 import {UiChannel} from "../../models/uiChannel";
 import {ChannelProcessor} from "./channelProcessor";
 import fs from "fs";
+import {AttachmentProcessor} from "./attachmentProcessor";
 
 export class MessagingEndpoints {
     static async checkChannelAccess(db: MariaDbDatabase, user: User, channelId: number) {
@@ -103,11 +104,7 @@ export class MessagingEndpoints {
                 return;
             }
             await db.deleteMessage(messageId);
-
-            const messageFolder = process.env.FILE_FOLDER + "/" + messageId;
-            if (fs.existsSync(messageFolder)) {
-                fs.rmSync(messageFolder, {recursive: true, force: true});
-            }
+            await AttachmentProcessor.deleteMessage(messageId);
 
             CLI.success(`Message ${messageId} deleted by user ${user.id}.`);
             res.json({message: "Message deleted"});

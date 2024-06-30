@@ -5,6 +5,7 @@ import {MessagingEndpoints} from "./messaging/endpoints";
 import fs from "fs";
 import {CLI} from "../tooling/CLI";
 import {User} from "./database/models";
+import {AttachmentProcessor} from "./messaging/attachmentProcessor";
 
 export class MessagingFeature {
     static enable(app: Application, db: MariaDbDatabase) {
@@ -72,12 +73,12 @@ export class MessagingFeature {
             }
 
             CLI.debug(`Sending attachment ${attachmentPath}`);
-            const stat = fs.statSync(attachmentPath);
             const messageAttachment = await db.getMessageAttachment(parseInt(messageId.toString()), filename.toString());
-            res.setHeader("Content-Type", messageAttachment?.type ?? "application/octet-stream");
-            res.setHeader("Content-Length", stat.size);
-            const stream = fs.createReadStream(attachmentPath);
-            stream.pipe(res);
+            if (!messageAttachment) {
+                res.status(404).send("Attachment not found");
+                return;
+            }
+            AttachmentProcessor.pipeAttachment(res, attachmentPath, messageAttachment);
         });
 
         return app;
