@@ -374,10 +374,7 @@ export class LiveFeature {
 
         await db.deleteMessage(messageId);
 
-        const messageFolder = process.env.FILE_FOLDER + "/" + messageId;
-        if (fs.existsSync(messageFolder)) {
-            fs.rmSync(messageFolder, {recursive: true, force: true});
-        }
+        await AttachmentProcessor.deleteMessage(messageId);
 
         const payload = JSON.stringify({
             type: "removeMessage",
