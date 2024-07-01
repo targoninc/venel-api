@@ -17,6 +17,7 @@ UI_DEPLOYMENT_URL=http://localhost:3001
 WEBSOCKET_URL=ws://127.0.0.1:8912
 FILE_FOLDER=path/to/files/folder (will be created if it doesn't exist)
 MAX_PAYLOAD_SIZE_MB=10
+FILE_PASSWORD=password
 ```
 
 ## Windows
@@ -34,3 +35,15 @@ docker-compose build --no-cache && docker-compose up -d
 # API Docs
 
 Access [http://localhost:3000/api-docs/](http://localhost:3000/api-docs/) after running the application.
+
+# Encryption
+
+This feature is work in progress.
+
+- [x] Symmetric encryption for attachments
+
+- [ ] Symmetric encryption for messages
+
+- [ ] Asymmetric encryption for attachments
+
+- [ ] Asymmetric encryption for messages
