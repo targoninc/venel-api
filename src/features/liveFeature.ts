@@ -164,12 +164,14 @@ export class LiveFeature {
                     client.send(JSON.stringify({error: "Attachment data is required"}));
                     return;
                 }
+                const size = attachment.data.length;
                 attachments.push({
                     messageId: message.id,
                     id: -1,
                     type: attachment.type,
                     filename: attachment.filename,
-                    data: attachment.data
+                    data: attachment.data,
+                    size: size.toString()
                 });
             }
 

@@ -8,6 +8,7 @@ export interface Attachment {
   'filename': string;
   'id': Id;
   'messageId': Id | null;
+  'size': string;
   'type': string;
 }
 

@@ -60,7 +60,7 @@ export class AttachmentProcessor {
             throw new Error("FILE_PASSWORD is not set");
         }
         const password = process.env.FILE_PASSWORD;
-        await db.createAttachment(messageId, attachment.type, attachment.filename);
+        await db.createAttachment(messageId, attachment.type, attachment.filename, attachment.size);
         const attachmentPath = messageFolder + "/" + attachment.filename;
         // @ts-ignore
         let data = Buffer.from(attachment.data, "base64");

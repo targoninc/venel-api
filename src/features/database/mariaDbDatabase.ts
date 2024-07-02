@@ -331,8 +331,8 @@ WHERE ur.userId = ?`, [userId]);
         return await this.query("SELECT * FROM venel.userSettings WHERE userId = ?", [id]);
     }
 
-    async createAttachment(id: Id, type: string, filename: string) {
-        await this.query("INSERT INTO venel.attachments (messageId, type, filename) VALUES (?, ?, ?)", [id, type, filename]);
+    async createAttachment(id: Id, type: string, filename: string, size: string) {
+        await this.query("INSERT INTO venel.attachments (messageId, type, filename, size) VALUES (?, ?, ?, ?)", [id, type, filename, size]);
     }
 
     async getMessageAttachment(messageId: Id, name: string): Promise<Attachment | null> {

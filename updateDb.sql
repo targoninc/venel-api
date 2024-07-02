@@ -161,6 +161,7 @@ create table if not exists venel.attachments
     messageId bigint                     null,
     type      varchar(64) default 'file' not null,
     filename  text                       not null,
+    size      varchar(64) default '0'    not null,
     constraint attachments_ibfk_1
         foreign key (messageId) references venel.messages (id)
             on delete cascade
