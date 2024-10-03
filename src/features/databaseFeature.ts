@@ -9,7 +9,7 @@ import {Reaction, ReactionGroup} from "./database/models";
 export class DatabaseFeature {
     static async enable(__dirname: string) {
         const db = new MariaDbDatabase();
-        db.connect();
+        await db.connect();
         await DatabaseFeature.checkDatabaseIntegrity(db, __dirname);
         return db;
     }

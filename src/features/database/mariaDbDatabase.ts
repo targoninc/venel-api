@@ -22,6 +22,7 @@ export class MariaDbDatabase {
     private readonly password: string;
     private readonly database: string;
     private pool: mariadb.Pool | null = null;
+    private conn: mariadb.Connection | null = null;
 
     constructor(host: string | null = null, user: string | null = null, password: string | null = null, port: number | null = null) {
         this.host = host || process.env.MYSQL_HOST || 'localhost';
@@ -29,30 +30,39 @@ export class MariaDbDatabase {
         this.user = user || process.env.MYSQL_USER || 'root';
         this.password = password || process.env.MYSQL_PASSWORD || '';
         this.database = process.env.MYSQL_DATABASE || 'venel';
+        this.conn = null;
         CLI.info(`Connecting to MariaDB at ${this.host}:${this.port} with user ${this.user} and database venel.`);
     }
 
-    connect() {
+    async connect() {
         this.pool = mariadb.createPool({
             host: this.host,
             port: this.port,
             user: this.user,
             password: this.password,
-            database: this.database
+            database: this.database,
+            connectionLimit: 10,
         });
         if (!this.pool) {
+            throw new Error("Could not create DB connection pool.");
+        }
+        this.conn = await this.pool.getConnection();
+        if (!this.conn) {
             throw new Error("Could not connect to database.");
         }
+        await this.conn.query("SET NAMES utf8mb4");
         CLI.success(`DB connected.`);
     }
 
     async query(sql: string, params: unknown[] = []) {
         if (!this.pool) {
-            this.connect();
+            await this.connect();
         }
-        let conn;
+        let conn = this.conn;
         try {
-            conn = await this.pool!.getConnection();
+            if (!conn) {
+                conn = await this.pool!.getConnection();
+            }
             return await conn.query({
                 sql,
                 bigIntAsNumber: true
@@ -62,10 +72,6 @@ export class MariaDbDatabase {
                 await this.handleUnknownColumnError(sql, e);
             }
             throw e;
-        } finally {
-            if (conn) {
-                await conn.end();
-            }
         }
     }
 
