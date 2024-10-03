@@ -4,7 +4,7 @@ This guide assumes you have Docker and Docker Compose installed and running on y
 
 ## Environment variables
 
-Create a `.env` file in the root of the project with the following content:
+Create a `.env` file in the root of the project with the following content (you can find a copy of this in `.env.example`):
 ```apacheconf
 MYSQL_HOST=mariadb
 MYSQL_ROOT_PASSWORD=myrootpassword
