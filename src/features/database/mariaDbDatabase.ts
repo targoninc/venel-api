@@ -28,7 +28,7 @@ export class MariaDbDatabase {
         this.port = port || (process.env.MYSQL_PORT ? parseInt(process.env.MYSQL_PORT) : null) || 3306;
         this.user = user || process.env.MYSQL_USER || 'root';
         this.password = password || process.env.MYSQL_PASSWORD || '';
-        this.database = 'venel';
+        this.database = process.env.MYSQL_DATABASE || 'venel';
         CLI.info(`Connecting to MariaDB at ${this.host}:${this.port} with user ${this.user} and database venel.`);
     }
 
