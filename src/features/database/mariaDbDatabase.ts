@@ -25,7 +25,7 @@ export class MariaDbDatabase {
 
     constructor(host: string | null = null, user: string | null = null, password: string | null = null, port: number | null = null) {
         this.host = host || process.env.MYSQL_HOST || 'localhost';
-        this.port = port || 3306;
+        this.port = port || (process.env.MYSQL_PORT ? parseInt(process.env.MYSQL_PORT) : null) || 3306;
         this.user = user || process.env.MYSQL_USER || 'root';
         this.password = password || process.env.MYSQL_PASSWORD || '';
         this.database = 'venel';
