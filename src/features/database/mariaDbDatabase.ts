@@ -24,12 +24,12 @@ export class MariaDbDatabase {
     private pool: mariadb.Pool | null = null;
 
     constructor(host: string | null = null, user: string | null = null, password: string | null = null, port: number | null = null) {
+        CLI.info(`Connecting to MariaDB at ${host}:${port} with user ${user} and database venel.`);
         this.host = host || process.env.MYSQL_HOST || 'localhost';
         this.port = port || 3306;
         this.user = user || process.env.MYSQL_USER || 'root';
         this.password = password || process.env.MYSQL_PASSWORD || '';
         this.database = 'venel';
-        CLI.info(`Set up MariaDB connection to ${this.host}:${this.port} with user ${this.user} and database venel.`);
     }
 
     connect() {
@@ -43,6 +43,7 @@ export class MariaDbDatabase {
         if (!this.pool) {
             throw new Error("Could not connect to database.");
         }
+        CLI.success(`DB connected.`);
     }
 
     async query(sql: string, params: unknown[] = []) {
