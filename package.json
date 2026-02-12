@@ -5,10 +5,7 @@
   "type": "module",
   "main": "main.ts",
   "scripts": {
-    "dev": "babel-watch --only *.ts --extensions .ts --watch src --before-restart \"npm run build:main\" --inspect -- dist/main.js",
-    "start": "node dist/main.js",
-    "build:main": "babel -x .ts -d dist src",
-    "build:types": "tsc",
+    "start": "bun src/main.ts",
     "models-from-database": "npx @rmp135/sql-ts -c database-type-generation/sql-to-ts.json",
     "parse-reactions": "cd emoji-generation && bun generateJson.ts"
   },
@@ -18,7 +15,7 @@
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "express": "^5.2.1",
     "express-session": "^1.18.0",
     "jimp": "^0.22.12",
     "mariadb": "^3.3.0",
@@ -26,7 +23,7 @@
     "passport-local": "^1.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
-    "ws": "^8.17.0"
+    "ws": "^8.17.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.5",
@@ -44,7 +41,7 @@
     "@types/ws": "^8.5.10",
     "babel-plugin-add-import-extension": "^1.6.0",
     "babel-watch": "^7.8.1",
-    "mysql2": "^3.9.7",
+    "mysql2": "^3.9.8",
     "typescript": "^5.4.5"
   }
 }

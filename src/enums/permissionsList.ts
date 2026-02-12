@@ -48,34 +48,6 @@ export const PermissionsList: Record<string, Permission> = {
         name: "removeUserFromRole",
         description: "Can remove a user from a role."
     },
-    viewBridgedInstances: {
-        name: "viewBridgedInstances",
-        description: "Can view a list of bridged instances."
-    },
-    addBridgedInstance: {
-        name: "addBridgedInstance",
-        description: "Can add a bridged instance."
-    },
-    removeBridgedInstance: {
-        name: "removeBridgedInstance",
-        description: "Can remove a bridged instance."
-    },
-    toggleBridgeInstanceAllowlist: {
-        name: "toggleBridgeInstanceAllowlist",
-        description: "Can toggle the allowlist of a bridged instance."
-    },
-    toggleBridgeInstanceEnabled: {
-        name: "toggleBridgeInstanceEnabled",
-        description: "Can toggle the enabled status of a bridged instance."
-    },
-    addBridgedInstanceUser: {
-        name: "addBridgedInstanceUser",
-        description: "Can add an allowed user to a bridged instance."
-    },
-    removeBridgedInstanceUser: {
-        name: "removeBridgedInstanceUser",
-        description: "Can remove an allowed user from a bridged instance."
-    },
     getUserPermissions: {
         name: "getUserPermissions",
         description: "Can get the permissions of another user."
